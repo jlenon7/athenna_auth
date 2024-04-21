@@ -1,6 +1,6 @@
 import { Inject } from '@athenna/ioc'
 import { Controller, type Context } from '@athenna/http'
-import type { AuthService } from '#src/service/auth.service'
+import type { AuthService } from '#src/services/auth.service'
 
 @Controller()
 export class AuthController {

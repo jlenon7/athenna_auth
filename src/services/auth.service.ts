@@ -2,6 +2,7 @@ import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
 import { Config } from '@athenna/config'
 import { Service, Inject } from '@athenna/ioc'
+import { UnauthorizedException } from '@athenna/http'
 import type { UserService } from '#src/services/user.service'
 
 @Service()
