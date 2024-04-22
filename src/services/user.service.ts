@@ -26,8 +26,14 @@ export class UserService {
     return user
   }
 
-  public async getByEmailSafe(email: string) {
-    return User.query().where('email', email).find()
+  public async getByEmail(email: string) {
+    const user = await User.query().where('email', email).find()
+
+    if (!user) {
+      throw new NotFoundException(`Not found any user with ${email} email.`)
+    }
+
+    return user
   }
 
   public async update(id: number, data: Partial<User>): Promise<User> {
@@ -35,7 +41,9 @@ export class UserService {
       data = Json.omit(data, ['password'])
     }
 
-    return User.query().where('id', id).update(data)
+    const user = await User.query().where('id', id).update(data)
+
+    return user as User
   }
 
   public async delete(id: number) {

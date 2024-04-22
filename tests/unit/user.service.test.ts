@@ -77,10 +77,17 @@ export default class UserServiceTest {
     Mock.when(Database.driver, 'where').returnThis()
     Mock.when(Database.driver, 'find').resolve(fakeUser)
 
-    const user = await new UserService().getByEmailSafe('lenon@athenna.io')
+    const user = await new UserService().getByEmail('lenon@athenna.io')
 
     assert.deepEqual(user.toJSON(), fakeUser.toJSON())
     assert.calledWith(Database.driver.where, 'email', 'lenon@athenna.io')
+  }
+
+  @Test()
+  public async shouldThrowNotFoundExceptionIfEmailDoesNotExist({ assert }: Context) {
+    Mock.when(Database.driver, 'find').resolve(undefined)
+
+    await assert.rejects(() => new UserService().getByEmail('lenon@athenna.io'), NotFoundException)
   }
 
   @Test()
