@@ -11,4 +11,6 @@ Route.group(() => {
 
   Route.post('users', 'UserController.store').middleware('user:validator')
   Route.post('login', 'AuthController.login').middleware('login:validator')
-}).prefix('/api/v1')
+})
+  .prefix('/api/v1')
+  .interceptor('response')
