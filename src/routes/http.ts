@@ -8,6 +8,6 @@ Route.group(() => {
     Route.delete('users/:id', 'UserController.delete')
   }).middleware('auth')
 
-  Route.post('users', 'UserController.store')
-  Route.post('login', 'AuthController.login')
+  Route.post('users', 'UserController.store').middleware('user:validator')
+  Route.post('login', 'AuthController.login').middleware('login:validator')
 }).prefix('/api/v1')

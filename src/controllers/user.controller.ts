@@ -22,7 +22,7 @@ export class UserController {
   public async show({ request, response }: Context) {
     const user = await this.userService.getById(request.param('id'))
 
-    return response.status(200).send({ data: user })
+    return response.status(200).send(user)
   }
 
   public async update({ request, response }: Context) {
