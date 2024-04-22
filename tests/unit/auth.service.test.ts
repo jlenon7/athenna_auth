@@ -1,5 +1,5 @@
 import bcrypt from 'bcrypt'
-import { UnauthorizedException } from '@athenna/http'
+import { NotFoundException, UnauthorizedException } from '@athenna/http'
 import { UserService } from '#src/services/user.service'
 import { AuthService } from '#src/services/auth.service'
 import { Test, type Context, Mock, AfterEach, BeforeEach } from '@athenna/test'
@@ -15,6 +15,26 @@ export default class AuthServiceTest {
   @AfterEach()
   public afterEach() {
     Mock.restoreAll()
+  }
+
+  @Test()
+  public async shouldBeAbleToGetTheDataOfTheLoggedInUser({ assert }: Context) {
+    Mock.when(this.userService, 'getById').resolve({ id: 1 })
+
+    const authService = new AuthService(this.userService)
+
+    const user = await authService.me(1)
+
+    assert.deepEqual(user, { id: 1 })
+  }
+
+  @Test()
+  public async shouldThrowNotFoundExceptionIfUserDoesNotExist({ assert }: Context) {
+    Mock.when(this.userService, 'getById').reject(new NotFoundException('Not found user with 1 id'))
+
+    const authService = new AuthService(this.userService)
+
+    await assert.rejects(() => authService.me(1), NotFoundException)
   }
 
   @Test()

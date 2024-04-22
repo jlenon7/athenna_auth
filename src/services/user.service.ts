@@ -20,7 +20,7 @@ export class UserService {
     const user = await User.query().where('id', id).find()
 
     if (!user) {
-      throw new NotFoundException(`Not found any user with ${id} id.`)
+      throw new NotFoundException(`Not found any user with id ${id}.`)
     }
 
     return user
@@ -30,7 +30,7 @@ export class UserService {
     const user = await User.query().where('email', email).find()
 
     if (!user) {
-      throw new NotFoundException(`Not found any user with ${email} email.`)
+      throw new NotFoundException(`Not found any user with email ${email}.`)
     }
 
     return user

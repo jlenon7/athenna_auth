@@ -7,6 +7,12 @@ export class AuthController {
   @Inject()
   private authService: AuthService
 
+  public async me({ data, response }: Context) {
+    const user = await this.authService.me(data.auth.user.id)
+
+    return response.status(200).send(user)
+  }
+
   public async login({ request, response }: Context) {
     const { email, password } = request.only(['email', 'password'])
     const token = await this.authService.login(email, password)

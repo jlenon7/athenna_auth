@@ -15,7 +15,7 @@ export class AuthMiddleware implements MiddlewareContract {
     try {
       const decoded = jwt.verify(token, Config.get('auth.jwt.secret'))
 
-      data.user = decoded.user
+      data.auth = decoded
     } catch {
       throw new UnauthorizedException('Access denied')
     }

@@ -13,6 +13,10 @@ export class AuthService {
     this.userService = userService
   }
 
+  public async me(id: number) {
+    return this.userService.getById(id)
+  }
+
   public async login(email: string, password: string) {
     try {
       const user = await this.userService.getByEmail(email)
