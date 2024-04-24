@@ -1,7 +1,7 @@
 import bcrypt from 'bcrypt'
-import { NotFoundException, UnauthorizedException } from '@athenna/http'
 import { UserService } from '#src/services/user.service'
 import { AuthService } from '#src/services/auth.service'
+import { NotFoundException, UnauthorizedException } from '@athenna/http'
 import { Test, type Context, Mock, AfterEach, BeforeEach } from '@athenna/test'
 
 export default class AuthServiceTest {

@@ -21,7 +21,6 @@ export default class UserServiceTest {
     const fakeUsers = await User.factory().count(10).make()
 
     Mock.when(Database.driver, 'findMany').resolve(fakeUsers)
-
     const users = await new UserService().getAll()
 
     assert.deepEqual(users.athenna.toJSON(), fakeUsers.athenna.toJSON())
@@ -36,7 +35,12 @@ export default class UserServiceTest {
     }
     const fakeUser = await User.factory().count(1).make(userToCreate)
 
-    Mock.when(Database.driver, 'find').resolve(undefined)
+    Mock.when(Database.driver, 'find')
+      .onFirstCall()
+      .resolve(undefined)
+      .onSecondCall()
+      .resolve({ id: 1, name: 'Customer' })
+
     Mock.when(Database.driver, 'createMany').resolve([fakeUser])
 
     const user = await new UserService().create(userToCreate)

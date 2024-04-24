@@ -2,18 +2,25 @@ import bcrypt from 'bcrypt'
 import { Json } from '@athenna/common'
 import { Service } from '@athenna/ioc'
 import { User } from '#src/models/user'
+import { Role } from '#src/models/role'
+import { RoleUser } from '#src/models/roleuser'
 import { NotFoundException } from '@athenna/http'
 
 @Service()
 export class UserService {
   public async getAll() {
-    return User.findMany()
+    return User.query().findMany()
   }
 
   public async create(data: Partial<User>) {
     data.password = await bcrypt.hash(data.password, 10)
 
-    return User.create(data)
+    const user = await User.create(data)
+    const role = await Role.find({ name: 'Customer' })
+
+    await RoleUser.create({ userId: user.id, roleId: role.id })
+
+    return user
   }
 
   public async getById(id: number) {

@@ -6,3 +6,5 @@ const repl = await ignite.repl()
 
 await repl.importAll('@athenna/common')
 await repl.importAll('#src/models/user')
+await repl.importAll('#src/models/role')
+await repl.importAll('#src/models/roleuser')

@@ -1,4 +1,6 @@
-import { Column, BaseModel } from '@athenna/database'
+import { Role } from '#src/models/role'
+import { RoleUser } from '#src/models/roleuser'
+import { Column, BaseModel, BelongsToMany } from '@athenna/database'
 
 export class User extends BaseModel {
   @Column()
@@ -12,6 +14,9 @@ export class User extends BaseModel {
 
   @Column({ isHidden: true, isNullable: false })
   public password: string
+
+  @BelongsToMany(() => Role, () => RoleUser)
+  public roles: Role[]
 
   public static attributes(): Partial<User> {
     return {}

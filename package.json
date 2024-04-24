@@ -28,7 +28,7 @@
     "@athenna/common": "^4.36.0",
     "@athenna/config": "^4.20.0",
     "@athenna/core": "^4.36.0",
-    "@athenna/database": "^4.42.0",
+    "@athenna/database": "^4.44.0",
     "@athenna/http": "^4.31.0",
     "@athenna/ioc": "^4.19.0",
     "@athenna/logger": "^4.20.0",
@@ -191,8 +191,17 @@
       "make:model": "@athenna/database/commands/MakeModelCommand",
       "make:seeder": "@athenna/database/commands/MakeSeederCommand",
       "make:migration": "@athenna/database/commands/MakeMigrationCommand",
+      "db:fresh": {
+        "path": "@athenna/database/commands/DbFreshCommand",
+        "loadApp": true,
+        "loadAllCommands": true
+      },
       "db:seed": {
         "path": "@athenna/database/commands/DbSeedCommand",
+        "loadApp": true
+      },
+      "db:wipe": {
+        "path": "@athenna/database/commands/DbWipeCommand",
         "loadApp": true
       },
       "migration:run": {
@@ -245,7 +254,9 @@
       "migrations": "src/database/migrations"
     },
     "models": [
-      "#src/models/user"
+      "#src/models/user",
+      "#src/models/role",
+      "#src/models/roleuser"
     ],
     "middlewares": [
       "#src/middlewares/auth.middleware",
