@@ -28,7 +28,7 @@
     "@athenna/common": "^4.36.0",
     "@athenna/config": "^4.20.0",
     "@athenna/core": "^4.36.0",
-    "@athenna/database": "^4.44.0",
+    "@athenna/database": "^4.45.0",
     "@athenna/http": "^4.31.0",
     "@athenna/ioc": "^4.19.0",
     "@athenna/logger": "^4.20.0",
@@ -262,7 +262,8 @@
       "#src/middlewares/auth.middleware",
       "#src/validators/login.validator",
       "#src/validators/register.validator",
-      "#src/interceptors/response.interceptor"
+      "#src/interceptors/response.interceptor",
+      "#src/middlewares/pagination.middleware"
     ]
   }
 }

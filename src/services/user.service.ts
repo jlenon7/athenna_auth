@@ -1,14 +1,14 @@
-import { Json } from '@athenna/common'
 import { Service } from '@athenna/ioc'
 import { User } from '#src/models/user'
 import { Role } from '#src/models/role'
 import { RoleUser } from '#src/models/roleuser'
 import { NotFoundException } from '@athenna/http'
+import { Json, type PaginationOptions } from '@athenna/common'
 
 @Service()
 export class UserService {
-  public async getAll() {
-    return User.query().findMany()
+  public async getAll(pagination: PaginationOptions = {}) {
+    return User.paginate(pagination)
   }
 
   public async create(data: Partial<User>) {
@@ -41,9 +41,7 @@ export class UserService {
   }
 
   public async update(id: number, data: Partial<User>): Promise<User> {
-    if (data.password) {
-      data = Json.omit(data, ['password'])
-    }
+    data = Json.omit(data, ['email', 'password'])
 
     const user = await User.query().where('id', id).update(data)
 

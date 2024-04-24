@@ -22,7 +22,7 @@ export default class UserServiceTest {
     Mock.when(Database.driver, 'findMany').resolve(fakeUsers)
     const users = await new UserService().getAll()
 
-    assert.deepEqual(users.athenna.toJSON(), fakeUsers.athenna.toJSON())
+    assert.deepEqual(users.data.athenna.toJSON(), fakeUsers.athenna.toJSON())
   }
 
   @Test()
@@ -91,6 +91,21 @@ export default class UserServiceTest {
   @Test()
   public async shouldBeAbleToUpdateAnUser({ assert }: Context) {
     const userToUpdate = {
+      name: 'João Lenon'
+    }
+    const fakeUser = await User.factory().count(1).make(userToUpdate)
+
+    Mock.when(Database.driver, 'find').resolve(undefined)
+    Mock.when(Database.driver, 'update').resolve(fakeUser)
+
+    await new UserService().update(1, userToUpdate)
+
+    assert.calledWith(Database.driver.update, { name: userToUpdate.name })
+  }
+
+  @Test()
+  public async shouldNotBeAbleToUpdateUserEmail({ assert }: Context) {
+    const userToUpdate = {
       name: 'João Lenon',
       email: 'lenon@athenna.io'
     }
@@ -101,14 +116,13 @@ export default class UserServiceTest {
 
     await new UserService().update(1, userToUpdate)
 
-    assert.calledWith(Database.driver.update, { name: userToUpdate.name, email: userToUpdate.email })
+    assert.calledWith(Database.driver.update, { name: userToUpdate.name })
   }
 
   @Test()
   public async shouldNotBeAbleToUpdateUserPassword({ assert }: Context) {
     const userToUpdate = {
       name: 'João Lenon',
-      email: 'lenon@athenna.io',
       password: '12345'
     }
     const fakeUser = await User.factory().count(1).make(userToUpdate)
@@ -118,7 +132,7 @@ export default class UserServiceTest {
 
     await new UserService().update(1, userToUpdate)
 
-    assert.calledWith(Database.driver.update, { name: userToUpdate.name, email: userToUpdate.email })
+    assert.calledWith(Database.driver.update, { name: userToUpdate.name })
   }
 
   @Test()

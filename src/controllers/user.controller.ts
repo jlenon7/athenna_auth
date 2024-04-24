@@ -7,8 +7,8 @@ export class UserController {
   @Inject()
   public userService: UserService
 
-  public async index({ response }: Context) {
-    const users = await this.userService.getAll()
+  public async index({ data, response }: Context) {
+    const users = await this.userService.getAll(data.pagination)
 
     return response.status(200).send(users)
   }
