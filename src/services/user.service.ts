@@ -1,4 +1,3 @@
-import bcrypt from 'bcrypt'
 import { Json } from '@athenna/common'
 import { Service } from '@athenna/ioc'
 import { User } from '#src/models/user'
@@ -13,8 +12,6 @@ export class UserService {
   }
 
   public async create(data: Partial<User>) {
-    data.password = await bcrypt.hash(data.password, 10)
-
     const user = await User.create(data)
     const role = await Role.find({ name: 'Customer' })
 

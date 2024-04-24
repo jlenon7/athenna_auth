@@ -2,6 +2,7 @@ import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
 import { Service } from '@athenna/ioc'
 import { Config } from '@athenna/config'
+import type { User } from '#src/models/user'
 import { UnauthorizedException } from '@athenna/http'
 import type { UserService } from '#src/services/user.service'
 
@@ -29,5 +30,11 @@ export class AuthService {
     } catch (err) {
       throw new UnauthorizedException('Authentication failed.')
     }
+  }
+
+  public async register(data: Partial<User>) {
+    data.password = await bcrypt.hash(data.password, 10)
+
+    return this.userService.create(data)
   }
 }

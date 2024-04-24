@@ -13,12 +13,6 @@ export class UserController {
     return response.status(200).send(users)
   }
 
-  public async store({ request, response }: Context) {
-    const user = await this.userService.create(request.body)
-
-    return response.status(201).send(user)
-  }
-
   public async show({ request, response }: Context) {
     const user = await this.userService.getById(request.param('id'))
 

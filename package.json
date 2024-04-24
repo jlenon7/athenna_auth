@@ -260,8 +260,8 @@
     ],
     "middlewares": [
       "#src/middlewares/auth.middleware",
-      "#src/validators/user.validator",
       "#src/validators/login.validator",
+      "#src/validators/register.validator",
       "#src/interceptors/response.interceptor"
     ]
   }

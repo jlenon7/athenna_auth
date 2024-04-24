@@ -1,4 +1,3 @@
-import bcrypt from 'bcrypt'
 import { User } from '#src/models/user'
 import { NotFoundException } from '@athenna/http'
 import { UserService } from '#src/services/user.service'
@@ -46,12 +45,7 @@ export default class UserServiceTest {
     const user = await new UserService().create(userToCreate)
 
     assert.deepEqual(user.toJSON(), fakeUser.toJSON())
-    assert.calledWith(Database.driver.createMany, [
-      {
-        password: await bcrypt.hash(userToCreate.password, 10),
-        ...userToCreate
-      }
-    ])
+    assert.calledWith(Database.driver.createMany, [userToCreate])
   }
 
   @Test()

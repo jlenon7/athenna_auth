@@ -19,4 +19,12 @@ export class AuthController {
 
     return response.status(200).send({ token })
   }
+
+  public async register({ request, response }: Context) {
+    const user = await this.authService.register(
+      request.only(['name', 'email', 'password'])
+    )
+
+    return response.status(201).send(user)
+  }
 }

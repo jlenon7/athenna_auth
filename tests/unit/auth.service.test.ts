@@ -63,4 +63,22 @@ export default class AuthServiceTest {
 
     await assert.rejects(() => authService.login('lenon@athenna.io', '12345'), UnauthorizedException)
   }
+
+  @Test()
+  public async shouldBeAbleToRegisterANewUser({ assert }: Context) {
+    const userToRegister = {
+      name: 'João Lenon',
+      email: 'lenon@athenna.io',
+      password: '12345'
+    }
+
+    Mock.when(this.userService, 'create').resolve(userToRegister)
+
+    const authService = new AuthService(this.userService)
+    const user = await authService.register(userToRegister)
+
+    assert.deepEqual(user, userToRegister)
+    assert.notCalledWithMatch(this.userService.create, { password: '12345' })
+    assert.calledWithMatch(this.userService.create, { name: userToRegister.name, email: userToRegister.email })
+  }
 }
