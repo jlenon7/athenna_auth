@@ -38,6 +38,7 @@ export class AuthMiddleware implements MiddlewareContract {
 
     const user = data.auth.user
     const roles = user.roles.map(role => role.name)
+    const isAdmin = roles.includes(RoleEnum.ADMIN)
 
     for (const role of roles) {
       const permission = Config.get(`auth.jwt.permissions.${role}`)
@@ -85,10 +86,22 @@ export class AuthMiddleware implements MiddlewareContract {
       id &&
       user.id !== parseInt(id) &&
       request.routeName === 'users' &&
-      !roles.includes(RoleEnum.ADMIN)
+      !isAdmin
     ) {
       Log.trace(
         `User with id ${user.id} is not authorized to access resources of user with id ${id}. Only [${RoleEnum.ADMIN}] roles could do that.`
+      )
+
+      throw new UnauthorizedException('Access denied')
+    }
+
+    if (
+      request.method === 'GET' &&
+      request.routeUrl.endsWith('/users') &&
+      !isAdmin
+    ) {
+      Log.trace(
+        `User with id ${user.id} is not authorized to access resources of other users. Only [${RoleEnum.ADMIN}] roles could do that.`
       )
 
       throw new UnauthorizedException('Access denied')
