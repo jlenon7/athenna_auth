@@ -1,46 +1,76 @@
 import jwt from 'jsonwebtoken'
+import { Log } from '@athenna/logger'
 import { Config } from '@athenna/config'
+import { RoleEnum } from '#src/enums/role.enum'
 import type { Context, MiddlewareContract } from '@athenna/http'
 import { Middleware, UnauthorizedException } from '@athenna/http'
 
 @Middleware({ name: 'auth' })
 export class AuthMiddleware implements MiddlewareContract {
-  public async handle({ data, request }: Context): Promise<void> {
-    const token = request.header('authorization')
+  public async handle(ctx: Context): Promise<void> {
+    const token = ctx.request.header('authorization')
 
     if (!token) {
+      Log.trace('Authorization token is not present in request headers.')
+
       throw new UnauthorizedException('Access denied')
     }
 
+    ctx.data.auth = this.decodeToken(token)
+
+    this.validatePermissions(ctx)
+  }
+
+  private decodeToken(token: string) {
     try {
-      const decoded = jwt.verify(token, Config.get('auth.jwt.secret'))
+      return jwt.verify(token, Config.get('auth.jwt.secret'))
+    } catch (err) {
+      Log.error('Verification of JWT token failed: %o', err)
 
-      data.auth = decoded
-    } catch {
       throw new UnauthorizedException('Access denied')
     }
+  }
 
-    const action = this.methodToAction(request.method, !!request.params.id)
+  private validatePermissions({ data, request }: Context) {
+    const action = this.methodToAction(request.method)
 
     let hasPermission = false
 
-    for (const { name } of data.auth.user.roles) {
-      const permission = Config.get(`auth.jwt.permissions.${name}`)
+    const user = data.auth.user
+    const roles = user.roles.map(role => role.name)
+
+    for (const role of roles) {
+      const permission = Config.get(`auth.jwt.permissions.${role}`)
 
       if (!permission) {
+        Log.trace(
+          `User with id ${user.id} has a role that is not available in permissions configuration. Available ones are [${RoleEnum.ADMIN}, ${RoleEnum.CUSTOMER}].`
+        )
+
         hasPermission = false
+
         break
       }
 
       const resource = permission[request.routeName]
 
       if (!resource) {
+        Log.trace(
+          `None permission was found for route with name ${request.routeName}. Enabling client to bypass the role validation.`
+        )
+
         hasPermission = true
+
         break
       }
 
-      if (!resource || resource.includes(action)) {
+      if (resource.includes(action)) {
+        Log.trace(
+          `User with id ${user.id} is authorized to perform ${action} action.`
+        )
+
         hasPermission = true
+
         break
       }
     }
@@ -48,11 +78,26 @@ export class AuthMiddleware implements MiddlewareContract {
     if (!hasPermission) {
       throw new UnauthorizedException('Access denied')
     }
+
+    const id = request.param('id')
+
+    if (
+      id &&
+      user.id !== parseInt(id) &&
+      request.routeName === 'users' &&
+      !roles.includes(RoleEnum.ADMIN)
+    ) {
+      Log.trace(
+        `User with id ${user.id} is not authorized to access resources of user with id ${id}. Only [${RoleEnum.ADMIN}] roles could do that.`
+      )
+
+      throw new UnauthorizedException('Access denied')
+    }
   }
 
-  private methodToAction(method: string, hasId = false) {
+  private methodToAction(method: string) {
     const permissionMap = {
-      GET: hasId ? 'read:own' : 'read:all',
+      GET: 'read',
       POST: 'write',
       PUT: 'update',
       DELETE: 'delete'
