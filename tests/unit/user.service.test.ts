@@ -1,4 +1,5 @@
 import { User } from '#src/models/user'
+import { RoleEnum } from '#src/enums/role.enum'
 import { NotFoundException } from '@athenna/http'
 import { UserService } from '#src/services/user.service'
 import { Database, DatabaseProvider } from '@athenna/database'
@@ -38,7 +39,7 @@ export default class UserServiceTest {
       .onFirstCall()
       .resolve(undefined)
       .onSecondCall()
-      .resolve({ id: 1, name: 'Customer' })
+      .resolve({ id: 1, name: RoleEnum.CUSTOMER })
 
     Mock.when(Database.driver, 'createMany').resolve([fakeUser])
 

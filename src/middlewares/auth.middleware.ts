@@ -19,5 +19,45 @@ export class AuthMiddleware implements MiddlewareContract {
     } catch {
       throw new UnauthorizedException('Access denied')
     }
+
+    const action = this.methodToAction(request.method, !!request.params.id)
+
+    let hasPermission = false
+
+    for (const { name } of data.auth.user.roles) {
+      const permission = Config.get(`auth.jwt.permissions.${name}`)
+
+      if (!permission) {
+        hasPermission = false
+        break
+      }
+
+      const resource = permission[request.routeName]
+
+      if (!resource) {
+        hasPermission = true
+        break
+      }
+
+      if (!resource || resource.includes(action)) {
+        hasPermission = true
+        break
+      }
+    }
+
+    if (!hasPermission) {
+      throw new UnauthorizedException('Access denied')
+    }
+  }
+
+  private methodToAction(method: string, hasId = false) {
+    const permissionMap = {
+      GET: hasId ? 'read:own' : 'read:all',
+      POST: 'write',
+      PUT: 'update',
+      DELETE: 'delete'
+    }
+
+    return permissionMap[method]
   }
 }

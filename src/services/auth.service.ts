@@ -24,6 +24,8 @@ export class AuthService {
 
       await bcrypt.compare(password, user.password)
 
+      await user.load('roles')
+
       return jwt.sign({ user: user.toJSON() }, Config.get('auth.jwt.secret'), {
         expiresIn: Config.get('auth.jwt.expiresIn')
       })

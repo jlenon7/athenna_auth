@@ -2,6 +2,7 @@ import { Service } from '@athenna/ioc'
 import { User } from '#src/models/user'
 import { Role } from '#src/models/role'
 import { RoleUser } from '#src/models/roleuser'
+import { RoleEnum } from '#src/enums/role.enum'
 import { NotFoundException } from '@athenna/http'
 import { Json, type PaginationOptions } from '@athenna/common'
 
@@ -13,7 +14,7 @@ export class UserService {
 
   public async create(data: Partial<User>) {
     const user = await User.create(data)
-    const role = await Role.find({ name: 'Customer' })
+    const role = await Role.find({ name: RoleEnum.CUSTOMER })
 
     await RoleUser.create({ userId: user.id, roleId: role.id })
 

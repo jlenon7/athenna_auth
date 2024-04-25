@@ -39,7 +39,11 @@ export default class AuthServiceTest {
 
   @Test()
   public async shouldBeAbleToLoginUserByCreatingJWTToken({ assert }: Context) {
-    Mock.when(this.userService, 'getByEmail').resolve({ password: await bcrypt.hash('12345', 10), toJSON: () => {} })
+    Mock.when(this.userService, 'getByEmail').resolve({
+      password: await bcrypt.hash('12345', 10),
+      toJSON: () => {},
+      load: () => {}
+    })
 
     const authService = new AuthService(this.userService)
 
