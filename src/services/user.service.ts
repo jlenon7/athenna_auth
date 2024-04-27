@@ -50,6 +50,8 @@ export class UserService {
   }
 
   public async delete(id: number) {
-    return User.query().where('id', id).delete()
+    await RoleUser.delete({ userId: id })
+
+    return User.delete({ id })
   }
 }

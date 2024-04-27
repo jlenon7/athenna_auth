@@ -93,4 +93,142 @@ export default class AuthControllerTest extends BaseHttpTest {
       data: { code: 'E_UNAUTHORIZED_ERROR', message: 'Access denied', name: 'UnauthorizedException' }
     })
   }
+
+  @Test()
+  public async shouldThrowValidationErrorWhenFieldsAreNotDefinedInBodyWhenLogin({ request }: Context) {
+    const response = await request.post('/api/v1/login')
+
+    response.assertStatusCode(422)
+    response.assertBodyContains({
+      data: {
+        code: 'E_VALIDATION_ERROR',
+        message: 'Validation failure',
+        name: 'ValidationException',
+        details: [
+          {
+            field: 'email',
+            message: 'The email field must be defined',
+            rule: 'required'
+          },
+          {
+            field: 'password',
+            message: 'The password field must be defined',
+            rule: 'required'
+          }
+        ]
+      }
+    })
+  }
+
+  @Test()
+  public async shouldBeAbleToRegisterANewUser({ assert, request }: Context) {
+    const response = await request.post('/api/v1/register', {
+      body: {
+        name: 'Test',
+        email: 'test@athenna.io',
+        password: '12345678',
+        password_confirmation: '12345678'
+      }
+    })
+
+    assert.isTrue(await User.exists({ email: 'test@athenna.io' }))
+    response.assertStatusCode(201)
+    response.assertBodyContains({
+      data: {
+        name: 'Test',
+        email: 'test@athenna.io'
+      }
+    })
+  }
+
+  @Test()
+  public async shouldThrowValidationErrorWhenFieldsAreNotDefinedInBodyWhenRegisteringUser({ request }: Context) {
+    const response = await request.post('/api/v1/register')
+
+    response.assertStatusCode(422)
+    response.assertBodyContains({
+      data: {
+        code: 'E_VALIDATION_ERROR',
+        message: 'Validation failure',
+        name: 'ValidationException',
+        details: [
+          {
+            field: 'name',
+            message: 'The name field must be defined',
+            rule: 'required'
+          },
+          {
+            field: 'email',
+            message: 'The email field must be defined',
+            rule: 'required'
+          },
+          {
+            field: 'password',
+            message: 'The password field must be defined',
+            rule: 'required'
+          }
+        ]
+      }
+    })
+  }
+
+  @Test()
+  public async shouldThrowValidationErrorWhenPasswordLenghtIsLessThenEightWhenRegisteringUser({ request }: Context) {
+    const response = await request.post('/api/v1/register', {
+      body: {
+        name: 'Test',
+        email: 'test@athenna.io',
+        password: '12345'
+      }
+    })
+
+    response.assertStatusCode(422)
+    response.assertBodyContains({
+      data: {
+        code: 'E_VALIDATION_ERROR',
+        message: 'Validation failure',
+        name: 'ValidationException',
+        details: [
+          {
+            field: 'password',
+            message: 'The password field must have at least 8 characters',
+            meta: {
+              min: 8
+            },
+            rule: 'minLength'
+          }
+        ]
+      }
+    })
+  }
+
+  @Test()
+  public async shouldThrowValidationErrorWhenPasswordConfirmationIsMissingWhenRegisteringUser({ request }: Context) {
+    const response = await request.post('/api/v1/register', {
+      body: {
+        name: 'Test',
+        email: 'test@athenna.io',
+        password: '12345678'
+      }
+    })
+
+    response.assertStatusCode(422)
+    response.assertBodyContains({
+      data: {
+        code: 'E_VALIDATION_ERROR',
+        message: 'Validation failure',
+        name: 'ValidationException',
+        details: [
+          {
+            field: 'password',
+            message: 'The password field and password_confirmation field must be the same',
+            meta: {
+              otherField: 'password_confirmation'
+            },
+            rule: 'confirmed'
+          }
+        ]
+      }
+    })
+  }
 }

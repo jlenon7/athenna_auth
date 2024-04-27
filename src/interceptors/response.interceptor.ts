@@ -15,7 +15,7 @@ export class ResponseInterceptor implements InterceptorContract {
       responseTime: response.responseTime
     }
 
-    if (response.body.meta && response.body.links) {
+    if (response.body?.meta && response.body?.links) {
       body.meta = response.body.meta
       body.links = response.body.links
       body.data = response.body.data

@@ -143,6 +143,6 @@ export default class UserServiceTest {
 
     await new UserService().delete(1)
 
-    assert.calledWith(Database.driver.where, 'id', 1)
+    assert.calledTimes(Database.driver.delete, 2)
   }
 }
