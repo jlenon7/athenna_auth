@@ -1,5 +1,6 @@
 import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
+import { Log } from '@athenna/logger'
 import { Service } from '@athenna/ioc'
 import { Config } from '@athenna/config'
 import type { User } from '#src/models/user'
@@ -21,8 +22,11 @@ export class AuthService {
   public async login(email: string, password: string) {
     try {
       const user = await this.userService.getByEmail(email)
+      const passwordMatch = await bcrypt.compare(password, user.password)
 
-      await bcrypt.compare(password, user.password)
+      if (!passwordMatch) {
+        throw new Error('Password does not match')
+      }
 
       await user.load('roles')
 
@@ -30,7 +34,8 @@ export class AuthService {
         expiresIn: Config.get('auth.jwt.expiresIn')
       })
     } catch (err) {
-      throw new UnauthorizedException('Authentication failed.')
+      Log.error('Login failed: %o', err)
+      throw new UnauthorizedException('Access denied')
     }
   }
 

@@ -37,7 +37,7 @@ export class AuthMiddleware implements MiddlewareContract {
     let hasPermission = false
 
     const user = data.auth.user
-    const roles = user.roles.map(role => role.name)
+    const roles = user.roles?.map(role => role.name) || []
     const isAdmin = roles.includes(RoleEnum.ADMIN)
 
     for (const role of roles) {

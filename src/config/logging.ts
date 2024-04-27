@@ -16,6 +16,13 @@ export default {
       formatter: 'simple'
     },
 
+    exception: {
+      level: 'trace',
+      formatter: 'none',
+      driver: Env('APP_ENV') === 'test' ? 'null' : 'console',
+      streamType: 'stderr'
+    },
+
     discard: {
       driver: 'null'
     },
