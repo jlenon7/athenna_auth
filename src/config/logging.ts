@@ -19,7 +19,8 @@ export default {
     exception: {
       level: 'trace',
       formatter: 'none',
-      driver: Env('APP_ENV') === 'test' ? 'null' : 'console',
+      driver: 'console',
+      // driver: Env('APP_ENV') === 'test' ? 'null' : 'console',
       streamType: 'stderr'
     },
 
