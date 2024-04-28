@@ -50,8 +50,6 @@ export class UserService {
   }
 
   public async delete(id: number) {
-    await RoleUser.delete({ userId: id })
-
     return User.delete({ id })
   }
 }

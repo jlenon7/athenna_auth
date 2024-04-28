@@ -15,6 +15,15 @@ export class User extends BaseModel {
   @Column({ isHidden: true, isNullable: false })
   public password: string
 
+  @Column({ name: 'created_at', isCreateDate: true })
+  public createdAt: Date
+
+  @Column({ name: 'updated_at', isUpdateDate: true })
+  public updatedAt: Date
+
+  @Column({ name: 'deleted_at', isDeleteDate: true })
+  public deletedAt: Date
+
   @BelongsToMany(() => Role, () => RoleUser)
   public roles: Role[]
 

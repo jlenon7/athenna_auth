@@ -247,7 +247,9 @@ export default class UserControllerTest extends BaseHttpTest {
       headers: { authorization: token }
     })
 
-    assert.isFalse(await User.exists({ id: user.id }))
+    await user.refresh()
+
+    assert.isDefined(user.deletedAt)
     response.assertStatusCode(204)
   }
 
@@ -259,7 +261,9 @@ export default class UserControllerTest extends BaseHttpTest {
       headers: { authorization: token }
     })
 
-    assert.isFalse(await User.exists({ id: user.id }))
+    await user.refresh()
+
+    assert.isDefined(user.deletedAt)
     response.assertStatusCode(204)
   }
 

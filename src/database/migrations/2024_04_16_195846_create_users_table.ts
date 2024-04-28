@@ -9,6 +9,8 @@ export class Users extends BaseMigration {
       builder.string('name').notNullable()
       builder.string('email').unique().notNullable()
       builder.string('password').notNullable()
+      builder.timestamps(true, true, false)
+      builder.timestamp('deleted_at').defaultTo(null)
     })
   }
 

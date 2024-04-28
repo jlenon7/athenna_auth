@@ -46,7 +46,7 @@ export default class UserServiceTest {
     const user = await new UserService().create(userToCreate)
 
     assert.deepEqual(user.toJSON(), fakeUser.toJSON())
-    assert.calledWith(Database.driver.createMany, [userToCreate])
+    assert.calledWithMatch(Database.driver.createMany, [Mock.match(userToCreate)])
   }
 
   @Test()
@@ -101,7 +101,7 @@ export default class UserServiceTest {
 
     await new UserService().update(1, userToUpdate)
 
-    assert.calledWith(Database.driver.update, { name: userToUpdate.name })
+    assert.calledWithMatch(Database.driver.update, { name: userToUpdate.name })
   }
 
   @Test()
@@ -117,7 +117,8 @@ export default class UserServiceTest {
 
     await new UserService().update(1, userToUpdate)
 
-    assert.calledWith(Database.driver.update, { name: userToUpdate.name })
+    assert.calledWithMatch(Database.driver.update, { name: userToUpdate.name })
+    assert.notCalledWithMatch(Database.driver.update, { email: userToUpdate.email })
   }
 
   @Test()
@@ -133,16 +134,17 @@ export default class UserServiceTest {
 
     await new UserService().update(1, userToUpdate)
 
-    assert.calledWith(Database.driver.update, { name: userToUpdate.name })
+    assert.calledWithMatch(Database.driver.update, { name: userToUpdate.name })
+    assert.notCalledWithMatch(Database.driver.update, { password: userToUpdate.password })
   }
 
   @Test()
   public async shouldBeAbleToDeleteAnUser({ assert }: Context) {
     Mock.when(Database.driver, 'where').returnThis()
-    Mock.when(Database.driver, 'delete').resolve(undefined)
+    Mock.when(Database.driver, 'update').resolve(undefined)
 
     await new UserService().delete(1)
 
-    assert.calledTimes(Database.driver.delete, 2)
+    assert.calledTimes(Database.driver.update, 1)
   }
 }
