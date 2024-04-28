@@ -1,7 +1,6 @@
 import bcrypt from 'bcrypt'
 import { User } from '#src/models/user'
 import { Role } from '#src/models/role'
-import { Config } from '@athenna/config'
 import { Database } from '@athenna/database'
 import { RoleUser } from '#src/models/roleuser'
 import { BaseHttpTest } from '@athenna/core/testing/BaseHttpTest'
