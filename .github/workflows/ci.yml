@@ -37,8 +37,8 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Run migrations and seeders
-        run: node artisan db:fresh --with-seeders --env test
+      - name: Run migrations
+        run: node artisan migration:run --env test
 
       - name: Run tests
         run: npm run test:coverage
