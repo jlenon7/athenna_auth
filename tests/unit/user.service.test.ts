@@ -8,11 +8,15 @@ import { Test, type Context, Mock, BeforeEach, AfterEach } from '@athenna/test'
 export default class UserServiceTest {
   @BeforeEach()
   public beforeEach() {
+    Config.set('database.default', 'fake')
+
     new DatabaseProvider().register()
   }
 
   @AfterEach()
   public afterEach() {
+    Config.set('database.default', Env('DB_CONNECTION', 'postgres'))
+
     Mock.restoreAll()
   }
 

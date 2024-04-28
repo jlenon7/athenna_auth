@@ -9,11 +9,15 @@ export default class AuthServiceTest {
 
   @BeforeEach()
   public beforeEach() {
+    Config.set('database.default', 'fake')
+
     this.userService = new UserService()
   }
 
   @AfterEach()
   public afterEach() {
+    Config.set('database.default', Env('DB_CONNECTION', 'postgres'))
+
     Mock.restoreAll()
   }
 

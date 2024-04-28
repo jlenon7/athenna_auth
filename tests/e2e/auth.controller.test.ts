@@ -10,8 +10,6 @@ import { Test, type Context, AfterAll, BeforeAll } from '@athenna/test'
 export default class AuthControllerTest extends BaseHttpTest {
   @BeforeAll()
   public async beforeAll() {
-    Config.set('database.default', 'postgres')
-
     await Database.runSeeders()
   }
 
@@ -21,8 +19,6 @@ export default class AuthControllerTest extends BaseHttpTest {
     await Role.truncate()
     await RoleUser.truncate()
     await Database.close()
-
-    Config.set('database.default', Env('DB_CONNECTION', 'fake'))
   }
 
   @Test()

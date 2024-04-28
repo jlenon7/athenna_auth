@@ -10,8 +10,6 @@ import { Test, type Context, AfterEach, BeforeEach } from '@athenna/test'
 export default class UserControllerTest extends BaseHttpTest {
   @BeforeEach()
   public async beforeEach() {
-    Config.set('database.default', 'postgres')
-
     await Database.runSeeders()
   }
 
@@ -21,8 +19,6 @@ export default class UserControllerTest extends BaseHttpTest {
     await Role.truncate()
     await RoleUser.truncate()
     await Database.close()
-
-    Config.set('database.default', Env('DB_CONNECTION', 'fake'))
   }
 
   @Test()
