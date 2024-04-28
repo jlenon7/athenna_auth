@@ -37,8 +37,11 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Setup database tables
-        run: node artisan db:fresh --env test --connection postgres
+      - name: Run migrations
+        run: node artisan migration:run --env test --connection postgres
+
+      - name: Run seeders
+        run: node artisan db:seed --env test --connection postgres
 
       - name: Run tests
         run: npm run test:coverage
