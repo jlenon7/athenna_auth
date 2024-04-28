@@ -38,7 +38,7 @@ jobs:
         run: npm install
 
       - name: Run migrations and seeders
-        run: node artisan db:fresh --env test --connection postgres
+        run: node artisan db:fresh --with-seeders --env test --connection postgres
 
       - name: Run tests
         run: npm run test:coverage
