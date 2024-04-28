@@ -37,6 +37,9 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      - name: Setup database tables
+        run: node artisan db:fresh
+
       - name: Run tests
         run: npm run test:coverage
 
