@@ -39,12 +39,7 @@ export default class UserServiceTest {
     }
     const fakeUser = await User.factory().count(1).make(userToCreate)
 
-    Mock.when(Database.driver, 'find')
-      .onFirstCall()
-      .resolve(undefined)
-      .onSecondCall()
-      .resolve({ id: 1, name: RoleEnum.CUSTOMER })
-
+    Mock.when(Database.driver, 'find').resolve({ id: 1, name: RoleEnum.CUSTOMER })
     Mock.when(Database.driver, 'createMany').resolve([fakeUser])
 
     const user = await new UserService().create(userToCreate)
@@ -116,7 +111,6 @@ export default class UserServiceTest {
     }
     const fakeUser = await User.factory().count(1).make(userToUpdate)
 
-    Mock.when(Database.driver, 'find').resolve(undefined)
     Mock.when(Database.driver, 'update').resolve(fakeUser)
 
     await new UserService().update(1, userToUpdate)
@@ -133,7 +127,6 @@ export default class UserServiceTest {
     }
     const fakeUser = await User.factory().count(1).make(userToUpdate)
 
-    Mock.when(Database.driver, 'find').resolve(undefined)
     Mock.when(Database.driver, 'update').resolve(fakeUser)
 
     await new UserService().update(1, userToUpdate)

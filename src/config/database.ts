@@ -69,7 +69,11 @@ export default {
 
     fake: {
       driver: 'fake',
-      validations: false
+      validations: {
+        isToSetAttributes: true,
+        isToValidateUnique: false,
+        isToValidateNullable: false
+      }
     }
   }
 }
