@@ -27,4 +27,10 @@ export class AuthController {
 
     return response.status(201).send(user)
   }
+
+  public async verifyEmail({ request, response }: Context) {
+    await this.authService.verifyEmail(request.query('emailToken'))
+
+    return response.status(204)
+  }
 }

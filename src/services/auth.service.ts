@@ -1,6 +1,8 @@
 import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
+import { Mail } from '@athenna/mail'
 import { Log } from '@athenna/logger'
+import { Uuid } from '@athenna/common'
 import { Service } from '@athenna/ioc'
 import { Config } from '@athenna/config'
 import type { User } from '#src/models/user'
@@ -40,8 +42,26 @@ export class AuthService {
   }
 
   public async register(data: Partial<User>) {
+    data.emailToken = Uuid.generate()
     data.password = await bcrypt.hash(data.password, 10)
 
-    return this.userService.create(data)
+    const user = await this.userService.create(data)
+
+    // TODO Move this to a queue
+    Mail.from('noreply@athenna.io')
+      .to(user.email)
+      .subject('Athenna Account Activation')
+      .view('mail/register', { user })
+      .send()
+
+    return user
+  }
+
+  public async verifyEmail(emailToken: string) {
+    const user = await this.userService.getByEmailToken(emailToken)
+
+    user.emailVerifiedAt = new Date()
+
+    await user.save()
   }
 }

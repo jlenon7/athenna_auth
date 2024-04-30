@@ -1,3 +1,4 @@
+import { Uuid } from '@athenna/common'
 import { User } from '#src/models/user'
 import { RoleEnum } from '#src/enums/role.enum'
 import { NotFoundException } from '@athenna/http'
@@ -86,6 +87,27 @@ export default class UserServiceTest {
     Mock.when(Database.driver, 'find').resolve(undefined)
 
     await assert.rejects(() => new UserService().getByEmail('lenon@athenna.io'), NotFoundException)
+  }
+
+  @Test()
+  public async shouldBeAbleToGetAnUserByEmailToken({ assert }: Context) {
+    const fakeUser = await User.factory().count(1).make()
+
+    Mock.when(Database.driver, 'where').returnThis()
+    Mock.when(Database.driver, 'find').resolve(fakeUser)
+
+    const emailToken = Uuid.generate()
+    const user = await new UserService().getByEmailToken(emailToken)
+
+    assert.deepEqual(user.toJSON(), fakeUser.toJSON())
+    assert.calledWith(Database.driver.where, 'email_token', emailToken)
+  }
+
+  @Test()
+  public async shouldThrowNotFoundExceptionIfEmailTokenDoesNotExist({ assert }: Context) {
+    Mock.when(Database.driver, 'find').resolve(undefined)
+
+    await assert.rejects(() => new UserService().getByEmailToken(Uuid.generate()), NotFoundException)
   }
 
   @Test()

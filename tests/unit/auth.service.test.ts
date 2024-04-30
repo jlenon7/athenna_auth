@@ -1,8 +1,10 @@
 import bcrypt from 'bcrypt'
+import { Uuid } from '@athenna/common'
 import { UserService } from '#src/services/user.service'
 import { AuthService } from '#src/services/auth.service'
 import { NotFoundException, UnauthorizedException } from '@athenna/http'
 import { Test, type Context, Mock, AfterEach, BeforeEach } from '@athenna/test'
+import { Mail } from '@athenna/mail'
 
 export default class AuthServiceTest {
   private userService: UserService
@@ -80,6 +82,7 @@ export default class AuthServiceTest {
       password: '12345'
     }
 
+    Mail.when('send').resolve(undefined)
     Mock.when(this.userService, 'create').resolve(userToRegister)
 
     const authService = new AuthService(this.userService)
@@ -88,5 +91,38 @@ export default class AuthServiceTest {
     assert.deepEqual(user, userToRegister)
     assert.notCalledWithMatch(this.userService.create, { password: '12345' })
     assert.calledWithMatch(this.userService.create, { name: userToRegister.name, email: userToRegister.email })
+  }
+
+  @Test()
+  public async shouldBeAbleToVerifyUserEmail({ assert }: Context) {
+    const userRegistered = {
+      name: 'João Lenon',
+      email: 'lenon@athenna.io',
+      password: '12345',
+      emailToken: Uuid.generate(),
+      emailVerifiedAt: null,
+      save: Mock.fake()
+    }
+
+    Mock.when(this.userService, 'getByEmailToken').resolve(userRegistered)
+
+    const authService = new AuthService(this.userService)
+
+    await authService.verifyEmail(userRegistered.emailToken)
+
+    assert.calledOnce(userRegistered.save)
+  }
+
+  @Test()
+  public async shouldThrowNotFoundExceptionWhenUserDoesNotExist({ assert }: Context) {
+    const emailToken = Uuid.generate()
+
+    Mock.when(this.userService, 'getByEmailToken').reject(
+      new NotFoundException(`Not found user with email token ${emailToken}`)
+    )
+
+    const authService = new AuthService(this.userService)
+
+    await assert.rejects(() => authService.verifyEmail(emailToken), NotFoundException)
   }
 }

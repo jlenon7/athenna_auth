@@ -1,4 +1,5 @@
 import bcrypt from 'bcrypt'
+import { Uuid } from '@athenna/common'
 import { User } from '#src/models/user'
 import { Role } from '#src/models/role'
 import { BaseSeeder } from '@athenna/database'
@@ -10,13 +11,17 @@ export class UserSeeder extends BaseSeeder {
     const userAdmin = await User.create({
       name: 'Admin',
       email: 'admin@athenna.io',
-      password: await bcrypt.hash('12345', 10)
+      password: await bcrypt.hash('12345', 10),
+      emailToken: Uuid.generate(),
+      emailVerifiedAt: new Date()
     })
 
     const userCustomer = await User.create({
       name: 'Customer',
       email: 'customer@athenna.io',
-      password: await bcrypt.hash('12345', 10)
+      password: await bcrypt.hash('12345', 10),
+      emailToken: Uuid.generate(),
+      emailVerifiedAt: new Date()
     })
 
     const roleAdmin = await Role.find({ name: RoleEnum.ADMIN })

@@ -15,6 +15,12 @@ export class User extends BaseModel {
   @Column({ isHidden: true, isNullable: false })
   public password: string
 
+  @Column({ name: 'email_token', isUnique: true, isNullable: false })
+  public emailToken: string
+
+  @Column({ name: 'email_verified_at' })
+  public emailVerifiedAt: Date
+
   @Column({ name: 'created_at', isCreateDate: true })
   public createdAt: Date
 

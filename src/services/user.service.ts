@@ -41,6 +41,21 @@ export class UserService {
     return user
   }
 
+  public async getByEmailToken(token: string) {
+    const user = await User.query()
+      .whereNull('emailVerifiedAt')
+      .where('emailToken', token)
+      .find()
+
+    if (!user) {
+      throw new NotFoundException(
+        `Not found any user with email token ${token}.`
+      )
+    }
+
+    return user
+  }
+
   public async update(id: number, data: Partial<User>): Promise<User> {
     data = Json.omit(data, ['email', 'password'])
 

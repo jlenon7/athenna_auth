@@ -1,5 +1,9 @@
 import { Route } from '@athenna/http'
 
+Route.view('/mailable', 'mail/register', { user: { name: 'João' } }).helmet({
+  contentSecurityPolicy: false
+})
+
 Route.group(() => {
   Route.group(() => {
     Route.get('me', 'AuthController.me')
@@ -12,6 +16,7 @@ Route.group(() => {
     }).name('users')
   }).middleware('auth')
 
+  Route.get('verify-email', 'AuthController.verifyEmail')
   Route.post('login', 'AuthController.login').middleware('login:validator')
   Route.post('register', 'AuthController.register').middleware(
     'register:validator'
