@@ -135,6 +135,7 @@
   },
   "athenna": {
     "services": [
+      "#src/helpers/queue",
       "#src/services/user.service",
       "#src/services/auth.service"
     ],
@@ -146,7 +147,8 @@
       "@athenna/view/providers/ViewProvider",
       "@athenna/mail/providers/MailProvider",
       "@athenna/mail/providers/SmtpServerProvider",
-      "@athenna/view/providers/ViewProvider"
+      "@athenna/view/providers/ViewProvider",
+      "#src/providers/queueworker.provider"
     ],
     "controllers": [
       "#src/controllers/user.controller",

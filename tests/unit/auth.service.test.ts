@@ -1,10 +1,11 @@
 import bcrypt from 'bcrypt'
+import { Mail } from '@athenna/mail'
 import { Uuid } from '@athenna/common'
+import { Queue } from '#src/providers/facades/queue'
 import { UserService } from '#src/services/user.service'
 import { AuthService } from '#src/services/auth.service'
 import { NotFoundException, UnauthorizedException } from '@athenna/http'
 import { Test, type Context, Mock, AfterEach, BeforeEach } from '@athenna/test'
-import { Mail } from '@athenna/mail'
 
 export default class AuthServiceTest {
   private userService: UserService
@@ -83,6 +84,7 @@ export default class AuthServiceTest {
     }
 
     Mail.when('send').resolve(undefined)
+    Queue.when('queue').resolve({ add: () => {} })
     Mock.when(this.userService, 'create').resolve(userToRegister)
 
     const authService = new AuthService(this.userService)

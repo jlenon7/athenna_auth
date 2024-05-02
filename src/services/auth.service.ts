@@ -1,11 +1,11 @@
 import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
-import { Mail } from '@athenna/mail'
 import { Log } from '@athenna/logger'
 import { Uuid } from '@athenna/common'
 import { Service } from '@athenna/ioc'
 import { Config } from '@athenna/config'
 import type { User } from '#src/models/user'
+import { Queue } from '#src/providers/facades/queue'
 import { UnauthorizedException } from '@athenna/http'
 import type { UserService } from '#src/services/user.service'
 
@@ -47,12 +47,7 @@ export class AuthService {
 
     const user = await this.userService.create(data)
 
-    // TODO Move this to a queue
-    Mail.from('noreply@athenna.io')
-      .to(user.email)
-      .subject('Athenna Account Activation')
-      .view('mail/register', { user })
-      .send()
+    await Queue.queue('user:register').then(q => q.add(user))
 
     return user
   }

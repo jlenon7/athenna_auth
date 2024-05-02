@@ -6,6 +6,7 @@ import { Config } from '@athenna/config'
 import { SmtpServer } from '@athenna/mail'
 import { Database } from '@athenna/database'
 import { RoleUser } from '#src/models/roleuser'
+import { Queue } from '#src/providers/facades/queue'
 import { BaseHttpTest } from '@athenna/core/testing/BaseHttpTest'
 import { Test, type Context, AfterAll, BeforeAll } from '@athenna/test'
 
@@ -18,6 +19,7 @@ export default class AuthControllerTest extends BaseHttpTest {
 
   @AfterAll()
   public async afterAll() {
+    await Queue.truncate()
     await SmtpServer.close()
     await User.truncate()
     await Role.truncate()
@@ -131,6 +133,9 @@ export default class AuthControllerTest extends BaseHttpTest {
       }
     })
 
+    const queue = await Queue.queue('user:register')
+
+    assert.deepEqual(await queue.length(), 1)
     assert.isTrue(await User.exists({ email: 'test@athenna.io' }))
     response.assertStatusCode(201)
     response.assertBodyContains({

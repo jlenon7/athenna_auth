@@ -36,6 +36,10 @@ export default {
       driver: 'smtp',
       host: Env('MAIL_HOST', 'localhost'),
       port: Env('MAIL_PORT', 587),
+      auth: {
+        user: Env('MAIL_USERNAME'),
+        pass: Env('MAIL_PASSWORD')
+      },
       tls: {
         rejectUnauthorized: false
       }
