@@ -28,8 +28,36 @@ export class AuthController {
     return response.status(201).send(user)
   }
 
-  public async verifyEmail({ request, response }: Context) {
-    await this.authService.verifyEmail(request.query('emailToken'))
+  public async confirm({ request, response }: Context) {
+    await this.authService.confirm(request.query('token'))
+
+    return response.status(204)
+  }
+
+  public async confirmEmailChange({ request, response }: Context) {
+    await this.authService.confirmEmailChange(
+      request.query('email'),
+      request.query('token')
+    )
+
+    return response.status(204)
+  }
+
+  public async confirmPasswordChange({ request, response }: Context) {
+    await this.authService.confirmPasswordChange(
+      request.query('password'),
+      request.query('token')
+    )
+
+    return response.status(204)
+  }
+
+  public async confirmEmailPasswordChange({ request, response }: Context) {
+    await this.authService.confirmEmailPasswordChange(
+      request.query('email'),
+      request.query('password'),
+      request.query('token')
+    )
 
     return response.status(204)
   }

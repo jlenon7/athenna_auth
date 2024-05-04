@@ -4,7 +4,7 @@ import { Log } from '@athenna/logger'
 import { Uuid } from '@athenna/common'
 import { Service } from '@athenna/ioc'
 import { Config } from '@athenna/config'
-import type { User } from '#src/models/user'
+import { User } from '#src/models/user'
 import { Queue } from '#src/providers/facades/queue'
 import { UnauthorizedException } from '@athenna/http'
 import type { UserService } from '#src/services/user.service'
@@ -24,7 +24,7 @@ export class AuthService {
   public async login(email: string, password: string) {
     try {
       const user = await this.userService.getByEmail(email)
-      const passwordMatch = await bcrypt.compare(password, user.password)
+      const passwordMatch = user.isPasswordEqual(password)
 
       if (!passwordMatch) {
         throw new Error('Password does not match')
@@ -42,20 +42,53 @@ export class AuthService {
   }
 
   public async register(data: Partial<User>) {
-    data.emailToken = Uuid.generate()
+    data.token = Uuid.generate()
     data.password = await bcrypt.hash(data.password, 10)
 
     const user = await this.userService.create(data)
 
-    await Queue.queue('user:register').then(q => q.add(user))
+    await Queue.queue('user:confirm').then(q => q.add(user))
 
     return user
   }
 
-  public async verifyEmail(emailToken: string) {
-    const user = await this.userService.getByEmailToken(emailToken)
+  public async confirm(token: string) {
+    const user = await this.userService.getByToken(token)
 
     user.emailVerifiedAt = new Date()
+
+    await user.save()
+  }
+
+  public async confirmEmailChange(email: string, token: string) {
+    const user = await this.userService.getByToken(token)
+
+    user.email = email
+
+    await user.save()
+  }
+
+  public async confirmPasswordChange(password: string, token: string) {
+    const user = await this.userService.getByToken(token)
+
+    /**
+     * Password is already hashed before sending
+     * the data to queue.
+     */
+    user.password = password
+
+    await user.save()
+  }
+
+  public async confirmEmailPasswordChange(
+    email: string,
+    password: string,
+    token: string
+  ) {
+    const user = await this.userService.getByToken(token)
+
+    user.email = email
+    user.password = password
 
     await user.save()
   }

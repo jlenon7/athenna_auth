@@ -1,9 +1,11 @@
+import bcrypt from 'bcrypt'
 import { Service } from '@athenna/ioc'
 import { User } from '#src/models/user'
 import { Role } from '#src/models/role'
 import { RoleUser } from '#src/models/roleuser'
 import { RoleEnum } from '#src/enums/role.enum'
 import { NotFoundException } from '@athenna/http'
+import { Queue } from '#src/providers/facades/queue'
 import { Json, type PaginationOptions } from '@athenna/common'
 
 @Service()
@@ -41,27 +43,51 @@ export class UserService {
     return user
   }
 
-  public async getByEmailToken(token: string) {
-    const user = await User.query()
-      .whereNull('emailVerifiedAt')
-      .where('emailToken', token)
-      .find()
+  public async getByToken(token: string) {
+    const user = await User.query().where('token', token).find()
 
     if (!user) {
-      throw new NotFoundException(
-        `Not found any user with email token ${token}.`
-      )
+      throw new NotFoundException(`Not found any user with token ${token}.`)
     }
 
     return user
   }
 
   public async update(id: number, data: Partial<User>): Promise<User> {
+    const user = await this.getById(id)
+
+    const token = user.token
+    const isEmailEqual = user.isEmailEqual(data.email)
+    const isPasswordEqual = user.isPasswordEqual(data.password)
+
+    switch (`${isEmailEqual}:${isPasswordEqual}`) {
+      case 'false:true':
+        // TODO Validate that email isn't already registered.
+        await Queue.queue('user:email').then(q =>
+          q.add({ user, token, email: data.email })
+        )
+        break
+      case 'true:false':
+        data.password = await bcrypt.hash(data.password, 10)
+
+        await Queue.queue('user:password').then(q =>
+          q.add({ user, token, password: data.password })
+        )
+        break
+      case 'false:false':
+        // TODO Validate that email isn't already registered.
+        data.password = await bcrypt.hash(data.password, 10)
+
+        await Queue.queue('user:email:password').then(q =>
+          q.add({ user, token, email: data.email, password: data.password })
+        )
+    }
+
     data = Json.omit(data, ['email', 'password'])
 
-    const user = await User.query().where('id', id).update(data)
+    const userUpdated = await User.query().where('id', id).update(data)
 
-    return user as User
+    return userUpdated as User
   }
 
   public async delete(id: number) {

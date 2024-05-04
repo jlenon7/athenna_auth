@@ -1,14 +1,17 @@
 import bcrypt from 'bcrypt'
 import { User } from '#src/models/user'
 import { Role } from '#src/models/role'
+import { SmtpServer } from '@athenna/mail'
 import { Database } from '@athenna/database'
 import { RoleUser } from '#src/models/roleuser'
+import { Queue } from '#src/providers/facades/queue'
 import { BaseHttpTest } from '@athenna/core/testing/BaseHttpTest'
 import { Test, type Context, AfterEach, BeforeEach } from '@athenna/test'
 
 export default class UserControllerTest extends BaseHttpTest {
   @BeforeEach()
   public async beforeEach() {
+    await SmtpServer.create({ disabledCommands: ['AUTH'] }).listen(5025)
     await Database.runSeeders()
   }
 
@@ -17,6 +20,7 @@ export default class UserControllerTest extends BaseHttpTest {
     await User.truncate()
     await Role.truncate()
     await RoleUser.truncate()
+    await SmtpServer.close()
     await Database.close()
   }
 
@@ -140,7 +144,7 @@ export default class UserControllerTest extends BaseHttpTest {
   }
 
   @Test()
-  public async shouldNotBeAbleToUpdateAUserEmail({ assert, request }: Context) {
+  public async shouldNotBeAbleToUpdateAUserEmailWithoutEmailConfirmation({ assert, request }: Context) {
     const user = await User.find({ email: 'customer@athenna.io' })
     const token = await ioc.use('authService').login('admin@athenna.io', '12345')
     const response = await request.put(`/api/v1/users/${user.id}`, {
@@ -150,6 +154,9 @@ export default class UserControllerTest extends BaseHttpTest {
 
     await user.refresh()
 
+    const queue = await Queue.queue('user:email')
+
+    assert.deepEqual(await queue.length(), 1)
     assert.deepEqual(user.name, 'Customer Updated')
     assert.deepEqual(user.email, 'customer@athenna.io')
     response.assertStatusCode(200)
@@ -159,7 +166,7 @@ export default class UserControllerTest extends BaseHttpTest {
   }
 
   @Test()
-  public async shouldNotBeAbleToUpdateAUserPassword({ assert, request }: Context) {
+  public async shouldNotBeAbleToUpdateAUserPasswordWithoutEmailConfirmation({ assert, request }: Context) {
     const user = await User.find({ email: 'customer@athenna.io' })
     const token = await ioc.use('authService').login('admin@athenna.io', '12345')
     const response = await request.put(`/api/v1/users/${user.id}`, {
@@ -169,6 +176,31 @@ export default class UserControllerTest extends BaseHttpTest {
 
     await user.refresh()
 
+    const queue = await Queue.queue('user:password')
+
+    assert.deepEqual(await queue.length(), 1)
+    assert.deepEqual(user.name, 'Customer Updated')
+    assert.isTrue(await bcrypt.compare('12345', user.password))
+    response.assertStatusCode(200)
+    response.assertBodyContains({
+      data: { name: 'Customer Updated', email: 'customer@athenna.io' }
+    })
+  }
+
+  @Test()
+  public async shouldNotBeAbleToUpdateAUserEmailAndPasswordWithoutEmailConfirmation({ assert, request }: Context) {
+    const user = await User.find({ email: 'customer@athenna.io' })
+    const token = await ioc.use('authService').login('admin@athenna.io', '12345')
+    const response = await request.put(`/api/v1/users/${user.id}`, {
+      body: { name: 'Customer Updated', email: 'customer-updated@athenna.io', password: '123456' },
+      headers: { authorization: token }
+    })
+
+    await user.refresh()
+
+    const queue = await Queue.queue('user:email:password')
+
+    assert.deepEqual(await queue.length(), 1)
     assert.deepEqual(user.name, 'Customer Updated')
     assert.isTrue(await bcrypt.compare('12345', user.password))
     response.assertStatusCode(200)

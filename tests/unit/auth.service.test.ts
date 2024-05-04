@@ -49,7 +49,9 @@ export default class AuthServiceTest {
     Mock.when(this.userService, 'getByEmail').resolve({
       password: await bcrypt.hash('12345', 10),
       toJSON: () => {},
-      load: () => {}
+      load: () => {},
+      isEmailEqual: () => {},
+      isPasswordEqual: () => true
     })
 
     const authService = new AuthService(this.userService)
@@ -101,30 +103,28 @@ export default class AuthServiceTest {
       name: 'João Lenon',
       email: 'lenon@athenna.io',
       password: '12345',
-      emailToken: Uuid.generate(),
+      token: Uuid.generate(),
       emailVerifiedAt: null,
       save: Mock.fake()
     }
 
-    Mock.when(this.userService, 'getByEmailToken').resolve(userRegistered)
+    Mock.when(this.userService, 'getByToken').resolve(userRegistered)
 
     const authService = new AuthService(this.userService)
 
-    await authService.verifyEmail(userRegistered.emailToken)
+    await authService.confirm(userRegistered.token)
 
     assert.calledOnce(userRegistered.save)
   }
 
   @Test()
   public async shouldThrowNotFoundExceptionWhenUserDoesNotExist({ assert }: Context) {
-    const emailToken = Uuid.generate()
+    const token = Uuid.generate()
 
-    Mock.when(this.userService, 'getByEmailToken').reject(
-      new NotFoundException(`Not found user with email token ${emailToken}`)
-    )
+    Mock.when(this.userService, 'getByToken').reject(new NotFoundException(`Not found user with email token ${token}`))
 
     const authService = new AuthService(this.userService)
 
-    await assert.rejects(() => authService.verifyEmail(emailToken), NotFoundException)
+    await assert.rejects(() => authService.confirm(token), NotFoundException)
   }
 }

@@ -90,24 +90,24 @@ export default class UserServiceTest {
   }
 
   @Test()
-  public async shouldBeAbleToGetAnUserByEmailToken({ assert }: Context) {
+  public async shouldBeAbleToGetAnUserBytoken({ assert }: Context) {
     const fakeUser = await User.factory().count(1).make()
 
     Mock.when(Database.driver, 'where').returnThis()
     Mock.when(Database.driver, 'find').resolve(fakeUser)
 
-    const emailToken = Uuid.generate()
-    const user = await new UserService().getByEmailToken(emailToken)
+    const token = Uuid.generate()
+    const user = await new UserService().getByToken(token)
 
     assert.deepEqual(user.toJSON(), fakeUser.toJSON())
-    assert.calledWith(Database.driver.where, 'email_token', emailToken)
+    assert.calledWith(Database.driver.where, 'token', token)
   }
 
   @Test()
-  public async shouldThrowNotFoundExceptionIfEmailTokenDoesNotExist({ assert }: Context) {
+  public async shouldThrowNotFoundExceptionIftokenDoesNotExist({ assert }: Context) {
     Mock.when(Database.driver, 'find').resolve(undefined)
 
-    await assert.rejects(() => new UserService().getByEmailToken(Uuid.generate()), NotFoundException)
+    await assert.rejects(() => new UserService().getByToken(Uuid.generate()), NotFoundException)
   }
 
   @Test()
@@ -117,7 +117,7 @@ export default class UserServiceTest {
     }
     const fakeUser = await User.factory().count(1).make(userToUpdate)
 
-    Mock.when(Database.driver, 'find').resolve(undefined)
+    Mock.when(Database.driver, 'find').resolve(fakeUser)
     Mock.when(Database.driver, 'update').resolve(fakeUser)
 
     await new UserService().update(1, userToUpdate)
@@ -133,6 +133,7 @@ export default class UserServiceTest {
     }
     const fakeUser = await User.factory().count(1).make(userToUpdate)
 
+    Mock.when(Database.driver, 'find').resolve(fakeUser)
     Mock.when(Database.driver, 'update').resolve(fakeUser)
 
     await new UserService().update(1, userToUpdate)
@@ -149,6 +150,7 @@ export default class UserServiceTest {
     }
     const fakeUser = await User.factory().count(1).make(userToUpdate)
 
+    Mock.when(Database.driver, 'find').resolve(fakeUser)
     Mock.when(Database.driver, 'update').resolve(fakeUser)
 
     await new UserService().update(1, userToUpdate)

@@ -16,7 +16,14 @@ Route.group(() => {
     }).name('users')
   }).middleware('auth')
 
-  Route.get('verify-email', 'AuthController.verifyEmail')
+  Route.get('confirm/account', 'AuthController.confirm')
+  Route.get('confirm/email', 'AuthController.confirmEmailChange')
+  Route.get('confirm/password', 'AuthController.confirmPasswordChange')
+  Route.get(
+    'confirm/email/password',
+    'AuthController.confirmEmailPasswordChange'
+  )
+
   Route.post('login', 'AuthController.login').middleware('login:validator')
   Route.post('register', 'AuthController.register').middleware(
     'register:validator'

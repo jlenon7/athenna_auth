@@ -1,3 +1,4 @@
+import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
 import { Uuid } from '@athenna/common'
 import { User } from '#src/models/user'
@@ -133,7 +134,7 @@ export default class AuthControllerTest extends BaseHttpTest {
       }
     })
 
-    const queue = await Queue.queue('user:register')
+    const queue = await Queue.queue('user:confirm')
 
     assert.deepEqual(await queue.length(), 1)
     assert.isTrue(await User.exists({ email: 'test@athenna.io' }))
@@ -238,12 +239,12 @@ export default class AuthControllerTest extends BaseHttpTest {
   }
 
   @Test()
-  public async shouldBeAbleToVerifyUserEmail({ assert, request }: Context) {
-    const user = await User.factory().create({ emailToken: Uuid.generate(), emailVerifiedAt: null })
+  public async shouldBeAbleToConfirmUserAccount({ assert, request }: Context) {
+    const user = await User.factory().create({ token: Uuid.generate(), emailVerifiedAt: null })
 
-    const response = await request.get('/api/v1/verify-email', {
+    const response = await request.get('/api/v1/confirm/account', {
       query: {
-        emailToken: user.emailToken
+        token: user.token
       }
     })
 
@@ -254,10 +255,10 @@ export default class AuthControllerTest extends BaseHttpTest {
   }
 
   @Test()
-  public async shouldThrowNotFoundExceptionIfEmailTokenDoesNotExist({ request }: Context) {
-    const response = await request.get('/api/v1/verify-email', {
+  public async shouldThrowNotFoundExceptionIfTokenDoesNotExistWhenConfirmingAccount({ request }: Context) {
+    const response = await request.get('/api/v1/confirm/account', {
       query: {
-        emailToken: 'not-found'
+        token: 'not-found'
       }
     })
 
@@ -265,19 +266,34 @@ export default class AuthControllerTest extends BaseHttpTest {
     response.assertBodyContains({
       data: {
         code: 'E_NOT_FOUND_ERROR',
-        message: 'Not found any user with email token not-found.',
+        message: 'Not found any user with token not-found.',
         name: 'NotFoundException'
       }
     })
   }
 
   @Test()
-  public async shouldThrowNotFoundExceptionIfEmailIsAlreadyVerified({ request }: Context) {
-    const user = await User.find({ name: 'Customer' })
+  public async shouldBeAbleToConfirmUserEmail({ assert, request }: Context) {
+    const user = await User.factory().create({ token: Uuid.generate() })
 
-    const response = await request.get('/api/v1/verify-email', {
+    const response = await request.get('/api/v1/confirm/email', {
       query: {
-        emailToken: user.emailToken
+        token: user.token,
+        email: 'newemail@athenna.io'
+      }
+    })
+
+    await user.refresh()
+
+    assert.deepEqual(user.email, 'newemail@athenna.io')
+    response.assertStatusCode(204)
+  }
+
+  @Test()
+  public async shouldThrowNotFoundExceptionIfTokenDoesNotExistWhenConfirmingEmail({ request }: Context) {
+    const response = await request.get('/api/v1/confirm/email', {
+      query: {
+        token: 'not-found'
       }
     })
 
@@ -285,7 +301,79 @@ export default class AuthControllerTest extends BaseHttpTest {
     response.assertBodyContains({
       data: {
         code: 'E_NOT_FOUND_ERROR',
-        message: `Not found any user with email token ${user.emailToken}.`,
+        message: 'Not found any user with token not-found.',
+        name: 'NotFoundException'
+      }
+    })
+  }
+
+  @Test()
+  public async shouldBeAbleToConfirmUserPassword({ assert, request }: Context) {
+    const user = await User.factory().create({ token: Uuid.generate() })
+
+    const response = await request.get('/api/v1/confirm/password', {
+      query: {
+        token: user.token,
+        password: await bcrypt.hash('1234567', 10)
+      }
+    })
+
+    await user.refresh()
+
+    assert.isTrue(user.isPasswordEqual('1234567'))
+    response.assertStatusCode(204)
+  }
+
+  @Test()
+  public async shouldThrowNotFoundExceptionIfTokenDoesNotExistWhenConfirmingPassword({ request }: Context) {
+    const response = await request.get('/api/v1/confirm/password', {
+      query: {
+        token: 'not-found'
+      }
+    })
+
+    response.assertStatusCode(404)
+    response.assertBodyContains({
+      data: {
+        code: 'E_NOT_FOUND_ERROR',
+        message: 'Not found any user with token not-found.',
+        name: 'NotFoundException'
+      }
+    })
+  }
+
+  @Test()
+  public async shouldBeAbleToConfirmUserEmailPassword({ assert, request }: Context) {
+    const user = await User.factory().create({ token: Uuid.generate() })
+
+    const response = await request.get('/api/v1/confirm/email/password', {
+      query: {
+        token: user.token,
+        email: 'newemaill@athenna.io',
+        password: await bcrypt.hash('1234567', 10)
+      }
+    })
+
+    await user.refresh()
+
+    assert.deepEqual(user.email, 'newemaill@athenna.io')
+    assert.isTrue(user.isPasswordEqual('1234567'))
+    response.assertStatusCode(204)
+  }
+
+  @Test()
+  public async shouldThrowNotFoundExceptionIfTokenDoesNotExistWhenConfirmingPassword({ request }: Context) {
+    const response = await request.get('/api/v1/confirm/email/password', {
+      query: {
+        token: 'not-found'
+      }
+    })
+
+    response.assertStatusCode(404)
+    response.assertBodyContains({
+      data: {
+        code: 'E_NOT_FOUND_ERROR',
+        message: 'Not found any user with token not-found.',
         name: 'NotFoundException'
       }
     })

@@ -12,7 +12,7 @@ export class UserSeeder extends BaseSeeder {
       name: 'Admin',
       email: 'admin@athenna.io',
       password: await bcrypt.hash('12345', 10),
-      emailToken: Uuid.generate(),
+      token: Uuid.generate(),
       emailVerifiedAt: new Date()
     })
 
@@ -20,7 +20,7 @@ export class UserSeeder extends BaseSeeder {
       name: 'Customer',
       email: 'customer@athenna.io',
       password: await bcrypt.hash('12345', 10),
-      emailToken: Uuid.generate(),
+      token: Uuid.generate(),
       emailVerifiedAt: new Date()
     })
 
