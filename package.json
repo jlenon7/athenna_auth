@@ -138,6 +138,7 @@
   "athenna": {
     "services": [
       "#src/helpers/queue",
+      "#src/helpers/validator",
       "#src/services/user.service",
       "#src/services/auth.service"
     ],

@@ -1,8 +1,8 @@
-import vine, { type Vine } from '@vinejs/vine'
 import type { SchemaTypes } from '@vinejs/vine/types'
+import { Validator } from '#src/providers/facades/validator'
 
 export abstract class BaseValidator {
-  protected validator: Vine = vine
+  public validator = Validator.schema()
 
   public abstract schema: SchemaTypes
   public abstract handle(data: any): Promise<void>
