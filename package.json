@@ -150,7 +150,8 @@
       "@athenna/mail/providers/MailProvider",
       "@athenna/mail/providers/SmtpServerProvider",
       "@athenna/view/providers/ViewProvider",
-      "#src/providers/queueworker.provider"
+      "#src/providers/queueworker.provider",
+      "#src/providers/validator.provider"
     ],
     "controllers": [
       "#src/controllers/user.controller",

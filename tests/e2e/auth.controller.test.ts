@@ -41,7 +41,7 @@ export default class AuthControllerTest extends BaseHttpTest {
 
   @Test()
   public async shouldThrowUnauthorizedExceptionIfAuthenticatedDontHaveRolesKey({ request }: Context) {
-    const token = await jwt.sign({ user: { id: -1 } }, Config.get('auth.jwt.secret'), {
+    const token = jwt.sign({ user: { id: -1 } }, Config.get('auth.jwt.secret'), {
       expiresIn: Config.get('auth.jwt.expiresIn')
     })
 
@@ -55,7 +55,7 @@ export default class AuthControllerTest extends BaseHttpTest {
 
   @Test()
   public async shouldThrowUnauthorizedExceptionIfAuthenticatedUserCannotBeFound({ request }: Context) {
-    const token = await jwt.sign({ user: { id: -1, roles: [] } }, Config.get('auth.jwt.secret'), {
+    const token = jwt.sign({ user: { id: -1, roles: [] } }, Config.get('auth.jwt.secret'), {
       expiresIn: Config.get('auth.jwt.expiresIn')
     })
 
@@ -232,6 +232,33 @@ export default class AuthControllerTest extends BaseHttpTest {
               otherField: 'password_confirmation'
             },
             rule: 'confirmed'
+          }
+        ]
+      }
+    })
+  }
+
+  @Test()
+  public async shouldThrowValidationErrorWhenTryingToCreateAnUserWithAnEmailThatAlreadyExists({ request }: Context) {
+    const response = await request.post('/api/v1/register', {
+      body: {
+        name: 'Test',
+        email: 'customer@athenna.io',
+        password: '12345678'
+      }
+    })
+
+    response.assertStatusCode(422)
+    response.assertBodyContains({
+      data: {
+        code: 'E_VALIDATION_ERROR',
+        message: 'Validation failure',
+        name: 'ValidationException',
+        details: [
+          {
+            field: 'email',
+            message: 'The email field is not unique',
+            rule: 'unique'
           }
         ]
       }

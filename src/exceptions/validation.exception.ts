@@ -1,11 +1,11 @@
 import { Exception } from '@athenna/common'
 
 export class ValidationException extends Exception {
-  public constructor(error: any) {
-    const status = error.status
+  public constructor(errors: any[]) {
+    const status = 422
     const message = 'Validation failure'
     const code = 'E_VALIDATION_ERROR'
-    const details = error.messages
+    const details = errors
 
     super({ code, status, message, details })
   }

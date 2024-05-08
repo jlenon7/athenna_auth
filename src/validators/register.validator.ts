@@ -3,13 +3,13 @@ import { BaseValidator } from '#src/validators/base.validator'
 
 @Middleware({ name: 'register:validator' })
 export class RegisterValidator extends BaseValidator {
-  public definition = this.schema.object({
-    name: this.schema.string(),
-    email: this.schema.string().email(),
-    password: this.schema.string().minLength(8).maxLength(32).confirmed()
+  public schema = this.validator.object({
+    name: this.validator.string(),
+    email: this.validator.string().email().unique({ table: 'users' }),
+    password: this.validator.string().minLength(8).maxLength(32).confirmed()
   })
 
-  public async handleHttp({ request }: Context): Promise<void> {
+  public async handle({ request }: Context) {
     const data = request.only([
       'name',
       'email',

@@ -1,1 +1,8 @@
-{"default":[],"deadletter":[],"user:email":[],"user:password":[{"user":{"name":"João Lenon","email":"Dereck_Conn@hotmail.com"},"password":"$2b$10$wpmwbiGnqA.W0toBLwGQsu9li3/qldRGx6vwGReQYx1PmQd6bkmMC"}],"user:email:password":[],"user:confirm":[]}
+{
+  "default": [],
+  "deadletter": [],
+  "user:email": [],
+  "user:password": [],
+  "user:email:password": [],
+  "user:confirm": []
+}
