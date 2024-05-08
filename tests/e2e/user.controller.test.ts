@@ -170,7 +170,7 @@ export default class UserControllerTest extends BaseHttpTest {
     const user = await User.find({ email: 'customer@athenna.io' })
     const token = await ioc.use('authService').login('admin@athenna.io', '12345')
     const response = await request.put(`/api/v1/users/${user.id}`, {
-      body: { name: 'Customer Updated', password: '123456' },
+      body: { name: 'Customer Updated', password: '12345678', password_confirmation: '12345678' },
       headers: { authorization: token }
     })
 
@@ -192,7 +192,12 @@ export default class UserControllerTest extends BaseHttpTest {
     const user = await User.find({ email: 'customer@athenna.io' })
     const token = await ioc.use('authService').login('admin@athenna.io', '12345')
     const response = await request.put(`/api/v1/users/${user.id}`, {
-      body: { name: 'Customer Updated', email: 'customer-updated@athenna.io', password: '123456' },
+      body: {
+        name: 'Customer Updated',
+        email: 'customer-updated@athenna.io',
+        password: '12345678',
+        password_confirmation: '12345678'
+      },
       headers: { authorization: token }
     })
 

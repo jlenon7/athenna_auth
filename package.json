@@ -280,6 +280,7 @@
       "#src/middlewares/auth.middleware",
       "#src/validators/login.validator",
       "#src/validators/register.validator",
+      "#src/validators/update.validator",
       "#src/interceptors/response.interceptor",
       "#src/middlewares/pagination.middleware"
     ]

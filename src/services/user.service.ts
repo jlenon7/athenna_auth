@@ -62,7 +62,6 @@ export class UserService {
 
     switch (`${isEmailEqual}:${isPasswordEqual}`) {
       case 'false:true':
-        // TODO Validate that email isn't already registered.
         await Queue.queue('user:email').then(q =>
           q.add({ user, token, email: data.email })
         )
@@ -75,7 +74,6 @@ export class UserService {
         )
         break
       case 'false:false':
-        // TODO Validate that email isn't already registered.
         data.password = await bcrypt.hash(data.password, 10)
 
         await Queue.queue('user:email:password').then(q =>

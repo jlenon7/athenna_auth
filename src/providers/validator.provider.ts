@@ -9,6 +9,7 @@ import { ValidationException } from '#src/exceptions/validation.exception'
 type UniqueOptions = {
   table: string
   column?: string
+  max?: number
 }
 
 declare module '@vinejs/vine' {
@@ -41,6 +42,19 @@ export default class ValidatorProvider extends ServiceProvider {
 
         if (!options.column) {
           options.column = field.name as string
+        }
+
+        if (options.max) {
+          const rows = await Database.table(options.table)
+            .select(options.column)
+            .where(options.column, value)
+            .findMany()
+
+          if (rows.length > options.max) {
+            field.report('The {{ field }} field is not unique', 'unique', field)
+          }
+
+          return
         }
 
         const existsRow = await Database.table(options.table)

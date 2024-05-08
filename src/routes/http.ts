@@ -11,7 +11,9 @@ Route.group(() => {
     Route.group(() => {
       Route.get('users', 'UserController.index').middleware('pagination')
       Route.get('users/:id', 'UserController.show')
-      Route.put('users/:id', 'UserController.update')
+      Route.put('users/:id', 'UserController.update').middleware(
+        'update:validator'
+      )
       Route.delete('users/:id', 'UserController.delete')
     }).name('users')
   }).middleware('auth')
