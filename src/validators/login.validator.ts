@@ -1,7 +1,7 @@
-import { Middleware, type Context } from '@athenna/http'
-import { BaseValidator } from '#src/validators/base.validator'
+import { type Context } from '@athenna/http'
+import { Validator, BaseValidator } from '@athenna/validator'
 
-@Middleware({ name: 'login:validator' })
+@Validator({ name: 'user:login' })
 export class LoginValidator extends BaseValidator {
   public schema = this.validator.object({
     email: this.validator.string().email(),

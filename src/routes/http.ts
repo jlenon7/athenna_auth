@@ -11,9 +11,7 @@ Route.group(() => {
     Route.group(() => {
       Route.get('users', 'UserController.index').middleware('pagination')
       Route.get('users/:id', 'UserController.show')
-      Route.put('users/:id', 'UserController.update').middleware(
-        'update:validator'
-      )
+      Route.put('users/:id', 'UserController.update').validator('user:update')
       Route.delete('users/:id', 'UserController.delete')
     }).name('users')
   }).middleware('auth')
@@ -26,10 +24,8 @@ Route.group(() => {
     'AuthController.confirmEmailPasswordChange'
   )
 
-  Route.post('login', 'AuthController.login').middleware('login:validator')
-  Route.post('register', 'AuthController.register').middleware(
-    'register:validator'
-  )
+  Route.post('login', 'AuthController.login').validator('user:login')
+  Route.post('register', 'AuthController.register').validator('user:register')
 })
   .prefix('/api/v1')
   .interceptor('response')

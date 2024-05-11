@@ -1,1 +1,8 @@
-{"default":[],"deadletter":[],"user:email":[],"user:password":[{"user":{"name":"João Lenon","email":"Monique_Johnson@yahoo.com"},"password":"$2b$10$utsMOdfjDFKeEdD6UKgXieeGgzh/KtoLPq0Q7il4Qlsvr7/IC23Qi"}],"user:email:password":[],"user:confirm":[]}
+{
+  "default":[],
+  "deadletter":[],
+  "user:email":[],
+  "user:password":[],
+  "user:email:password":[],
+  "user:confirm":[]
+}

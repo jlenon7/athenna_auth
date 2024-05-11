@@ -104,7 +104,7 @@ export default class UserControllerTest extends BaseHttpTest {
   }
 
   @Test()
-  public async shouldThrowUnauthorizedExceptionWhenTryingToGetAllUsersWithoutAToken({ request }: Context) {
+  public async shouldThrowUnauthorizedExceptionWhenTryingToGetOneUserWithoutAToken({ request }: Context) {
     const response = await request.get('/api/v1/users/1')
 
     response.assertStatusCode(401)

@@ -136,6 +136,8 @@ export default class AuthControllerTest extends BaseHttpTest {
 
     const queue = await Queue.queue('user:confirm')
 
+    console.log(response.response)
+
     assert.deepEqual(await queue.length(), 1)
     assert.isTrue(await User.exists({ email: 'test@athenna.io' }))
     response.assertStatusCode(201)
@@ -389,7 +391,7 @@ export default class AuthControllerTest extends BaseHttpTest {
   }
 
   @Test()
-  public async shouldThrowNotFoundExceptionIfTokenDoesNotExistWhenConfirmingPassword({ request }: Context) {
+  public async shouldThrowNotFoundExceptionIfTokenDoesNotExistWhenConfirmingEmailPassword({ request }: Context) {
     const response = await request.get('/api/v1/confirm/email/password', {
       query: {
         token: 'not-found'
