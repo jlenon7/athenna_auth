@@ -287,6 +287,12 @@
       "#src/validators/login.validator",
       "#src/validators/register.validator",
       "#src/validators/update.validator"
+    ],
+    "jobs": [
+      "#src/jobs/userconfirm.job",
+      "#src/jobs/useremail.job",
+      "#src/jobs/useremailpassword.job",
+      "#src/jobs/userpassword.job"
     ]
   }
 }
