@@ -1,17 +1,14 @@
 import bcrypt from 'bcrypt'
-import jwt from 'jsonwebtoken'
-import { Uuid } from '@athenna/common'
 import { User } from '#src/models/user'
 import { Role } from '#src/models/role'
-import { Config } from '@athenna/config'
 import { SmtpServer } from '@athenna/mail'
 import { Database } from '@athenna/database'
 import { RoleUser } from '#src/models/roleuser'
 import { Queue } from '#src/providers/facades/queue'
-import { BaseHttpTest } from '@athenna/core/testing/BaseHttpTest'
+import { BaseE2ETest } from '#tests/helpers/base.e2e.test'
 import { Test, type Context, AfterAll, BeforeAll } from '@athenna/test'
 
-export default class AuthControllerTest extends BaseHttpTest {
+export default class AuthControllerTest extends BaseE2ETest {
   @BeforeAll()
   public async beforeAll() {
     await SmtpServer.create({ disabledCommands: ['AUTH'] }).listen(5025)
@@ -30,7 +27,7 @@ export default class AuthControllerTest extends BaseHttpTest {
 
   @Test()
   public async shouldBeAbleToGetTheAuthenticatedUserUsingMeEndpoint({ request }: Context) {
-    const token = await ioc.use('authService').login('customer@athenna.io', '12345')
+    const token = await this.getCustomerToken()
     const response = await request.get('/api/v1/me', { headers: { authorization: token } })
 
     response.assertStatusCode(200)
@@ -41,9 +38,7 @@ export default class AuthControllerTest extends BaseHttpTest {
 
   @Test()
   public async shouldThrowUnauthorizedExceptionIfAuthenticatedDontHaveRolesKey({ request }: Context) {
-    const token = jwt.sign({ user: { id: -1 } }, Config.get('auth.jwt.secret'), {
-      expiresIn: Config.get('auth.jwt.expiresIn')
-    })
+    const token = this.createFakeToken({ user: { id: -1 } })
 
     const response = await request.get('/api/v1/me', { headers: { authorization: token } })
 
@@ -55,9 +50,7 @@ export default class AuthControllerTest extends BaseHttpTest {
 
   @Test()
   public async shouldThrowUnauthorizedExceptionIfAuthenticatedUserCannotBeFound({ request }: Context) {
-    const token = jwt.sign({ user: { id: -1, roles: [] } }, Config.get('auth.jwt.secret'), {
-      expiresIn: Config.get('auth.jwt.expiresIn')
-    })
+    const token = this.createFakeToken({ user: { id: -1, roles: [] } })
 
     const response = await request.get('/api/v1/me', { headers: { authorization: token } })
 
@@ -135,8 +128,6 @@ export default class AuthControllerTest extends BaseHttpTest {
     })
 
     const queue = await Queue.queue('user:confirm')
-
-    console.log(response.response)
 
     assert.deepEqual(await queue.length(), 1)
     assert.isTrue(await User.exists({ email: 'test@athenna.io' }))
@@ -269,7 +260,7 @@ export default class AuthControllerTest extends BaseHttpTest {
 
   @Test()
   public async shouldBeAbleToConfirmUserAccount({ assert, request }: Context) {
-    const user = await User.factory().create({ token: Uuid.generate(), emailVerifiedAt: null })
+    const user = await User.factory().create({ emailVerifiedAt: null })
 
     const response = await request.get('/api/v1/confirm/account', {
       query: {
@@ -303,7 +294,7 @@ export default class AuthControllerTest extends BaseHttpTest {
 
   @Test()
   public async shouldBeAbleToConfirmUserEmail({ assert, request }: Context) {
-    const user = await User.factory().create({ token: Uuid.generate() })
+    const user = await User.factory().create()
 
     const response = await request.get('/api/v1/confirm/email', {
       query: {
@@ -338,7 +329,7 @@ export default class AuthControllerTest extends BaseHttpTest {
 
   @Test()
   public async shouldBeAbleToConfirmUserPassword({ assert, request }: Context) {
-    const user = await User.factory().create({ token: Uuid.generate() })
+    const user = await User.factory().create()
 
     const response = await request.get('/api/v1/confirm/password', {
       query: {
@@ -373,7 +364,7 @@ export default class AuthControllerTest extends BaseHttpTest {
 
   @Test()
   public async shouldBeAbleToConfirmUserEmailPassword({ assert, request }: Context) {
-    const user = await User.factory().create({ token: Uuid.generate() })
+    const user = await User.factory().create()
 
     const response = await request.get('/api/v1/confirm/email/password', {
       query: {

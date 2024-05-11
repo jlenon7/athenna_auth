@@ -15,7 +15,7 @@ class VanillaQueue<T = any> {
     const path = Path.storage('queues.json')
 
     return new File(path, '').setContent(
-      JSON.stringify({ default: [], deadletter: [] })
+      JSON.stringify({ default: [], deadletter: [] }, null, 2)
     )
   }
 

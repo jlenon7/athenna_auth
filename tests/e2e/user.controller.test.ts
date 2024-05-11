@@ -5,18 +5,19 @@ import { SmtpServer } from '@athenna/mail'
 import { Database } from '@athenna/database'
 import { RoleUser } from '#src/models/roleuser'
 import { Queue } from '#src/providers/facades/queue'
-import { BaseHttpTest } from '@athenna/core/testing/BaseHttpTest'
-import { Test, type Context, AfterEach, BeforeEach } from '@athenna/test'
+import { BaseE2ETest } from '#tests/helpers/base.e2e.test'
+import { Test, type Context, AfterAll, BeforeAll } from '@athenna/test'
 
-export default class UserControllerTest extends BaseHttpTest {
-  @BeforeEach()
-  public async beforeEach() {
+export default class UserControllerTest extends BaseE2ETest {
+  @BeforeAll()
+  public async beforeAll() {
     await SmtpServer.create({ disabledCommands: ['AUTH'] }).listen(5025)
     await Database.runSeeders()
   }
 
-  @AfterEach()
-  public async afterEach() {
+  @AfterAll()
+  public async afterAll() {
+    await Queue.truncate()
     await User.truncate()
     await Role.truncate()
     await RoleUser.truncate()
@@ -26,7 +27,7 @@ export default class UserControllerTest extends BaseHttpTest {
 
   @Test()
   public async shouldBeAbleToGetAllUsers({ request }: Context) {
-    const token = await ioc.use('authService').login('admin@athenna.io', '12345')
+    const token = await this.getAdminToken()
     const response = await request.get('/api/v1/users', { headers: { authorization: token } })
 
     response.assertStatusCode(200)
@@ -60,7 +61,7 @@ export default class UserControllerTest extends BaseHttpTest {
 
   @Test()
   public async shouldThrowUnauthorizedExceptionWhenTryingToGetAllUsersAsACustomer({ request }: Context) {
-    const token = await ioc.use('authService').login('customer@athenna.io', '12345')
+    const token = await this.getCustomerToken()
     const response = await request.get('/api/v1/users', { headers: { authorization: token } })
 
     response.assertStatusCode(401)
@@ -72,7 +73,7 @@ export default class UserControllerTest extends BaseHttpTest {
   @Test()
   public async shouldBeAbleToGetAUserById({ request }: Context) {
     const user = await User.find({ email: 'customer@athenna.io' })
-    const token = await ioc.use('authService').login('admin@athenna.io', '12345')
+    const token = await this.getAdminToken()
     const response = await request.get(`/api/v1/users/${user.id}`, { headers: { authorization: token } })
 
     response.assertStatusCode(200)
@@ -84,7 +85,7 @@ export default class UserControllerTest extends BaseHttpTest {
   @Test()
   public async shouldBeAbleToGetOwnUserByIdAsACustomer({ request }: Context) {
     const user = await User.find({ email: 'customer@athenna.io' })
-    const token = await ioc.use('authService').login('customer@athenna.io', '12345')
+    const token = await this.getCustomerToken()
     const response = await request.get(`/api/v1/users/${user.id}`, { headers: { authorization: token } })
 
     response.assertStatusCode(200)
@@ -116,7 +117,7 @@ export default class UserControllerTest extends BaseHttpTest {
   @Test()
   public async shouldThrowUnauthorizedExceptionWhenTryingToGetAUserDifferentThenYoursAsACustomer({ request }: Context) {
     const user = await User.find({ email: 'admin@athenna.io' })
-    const token = await ioc.use('authService').login('customer@athenna.io', '12345')
+    const token = await this.getCustomerToken()
     const response = await request.get(`/api/v1/users/${user.id}`, { headers: { authorization: token } })
 
     response.assertStatusCode(401)
@@ -127,8 +128,8 @@ export default class UserControllerTest extends BaseHttpTest {
 
   @Test()
   public async shouldBeAbleToUpdateAUserName({ assert, request }: Context) {
-    const user = await User.find({ email: 'customer@athenna.io' })
-    const token = await ioc.use('authService').login('admin@athenna.io', '12345')
+    const user = await this.createCustomer()
+    const token = await this.createToken(user)
     const response = await request.put(`/api/v1/users/${user.id}`, {
       body: { name: 'Customer Updated' },
       headers: { authorization: token }
@@ -139,14 +140,14 @@ export default class UserControllerTest extends BaseHttpTest {
     assert.deepEqual(user.name, 'Customer Updated')
     response.assertStatusCode(200)
     response.assertBodyContains({
-      data: { name: 'Customer Updated', email: 'customer@athenna.io' }
+      data: { name: 'Customer Updated' }
     })
   }
 
   @Test()
   public async shouldNotBeAbleToUpdateAUserEmailWithoutEmailConfirmation({ assert, request }: Context) {
     const user = await User.find({ email: 'customer@athenna.io' })
-    const token = await ioc.use('authService').login('admin@athenna.io', '12345')
+    const token = await this.getAdminToken()
     const response = await request.put(`/api/v1/users/${user.id}`, {
       body: { name: 'Customer Updated', email: 'customer-updated@athenna.io' },
       headers: { authorization: token }
@@ -168,7 +169,7 @@ export default class UserControllerTest extends BaseHttpTest {
   @Test()
   public async shouldNotBeAbleToUpdateAUserPasswordWithoutEmailConfirmation({ assert, request }: Context) {
     const user = await User.find({ email: 'customer@athenna.io' })
-    const token = await ioc.use('authService').login('admin@athenna.io', '12345')
+    const token = await this.getAdminToken()
     const response = await request.put(`/api/v1/users/${user.id}`, {
       body: { name: 'Customer Updated', password: '12345678', password_confirmation: '12345678' },
       headers: { authorization: token }
@@ -190,7 +191,7 @@ export default class UserControllerTest extends BaseHttpTest {
   @Test()
   public async shouldNotBeAbleToUpdateAUserEmailAndPasswordWithoutEmailConfirmation({ assert, request }: Context) {
     const user = await User.find({ email: 'customer@athenna.io' })
-    const token = await ioc.use('authService').login('admin@athenna.io', '12345')
+    const token = await this.getAdminToken()
     const response = await request.put(`/api/v1/users/${user.id}`, {
       body: {
         name: 'Customer Updated',
@@ -216,8 +217,8 @@ export default class UserControllerTest extends BaseHttpTest {
 
   @Test()
   public async shouldBeAbleToUpdateOwnUserByIdAsACustomer({ assert, request }: Context) {
-    const user = await User.find({ email: 'customer@athenna.io' })
-    const token = await ioc.use('authService').login('customer@athenna.io', '12345')
+    const user = await this.createCustomer()
+    const token = await this.createToken(user)
     const response = await request.put(`/api/v1/users/${user.id}`, {
       body: {
         name: 'Customer Updated'
@@ -230,7 +231,7 @@ export default class UserControllerTest extends BaseHttpTest {
     assert.deepEqual(user.name, 'Customer Updated')
     response.assertStatusCode(200)
     response.assertBodyContains({
-      data: { name: 'Customer Updated', email: 'customer@athenna.io' }
+      data: { name: 'Customer Updated' }
     })
   }
 
@@ -259,7 +260,7 @@ export default class UserControllerTest extends BaseHttpTest {
     request
   }: Context) {
     const user = await User.find({ email: 'admin@athenna.io' })
-    const token = await ioc.use('authService').login('customer@athenna.io', '12345')
+    const token = await this.getCustomerToken()
     const response = await request.put(`/api/v1/users/${user.id}`, {
       body: { name: 'Admin Updated' },
       headers: { authorization: token }
@@ -273,8 +274,8 @@ export default class UserControllerTest extends BaseHttpTest {
 
   @Test()
   public async shouldBeAbleToDeleteAUser({ assert, request }: Context) {
-    const user = await User.find({ email: 'customer@athenna.io' })
-    const token = await ioc.use('authService').login('admin@athenna.io', '12345')
+    const user = await this.createCustomer()
+    const token = await this.getAdminToken()
     const response = await request.delete(`/api/v1/users/${user.id}`, {
       headers: { authorization: token }
     })
@@ -287,8 +288,8 @@ export default class UserControllerTest extends BaseHttpTest {
 
   @Test()
   public async shouldBeAbleToDeleteOwnUserByIdAsACustomer({ assert, request }: Context) {
-    const user = await User.find({ email: 'customer@athenna.io' })
-    const token = await ioc.use('authService').login('customer@athenna.io', '12345')
+    const user = await this.createCustomer()
+    const token = await this.createToken(user)
     const response = await request.delete(`/api/v1/users/${user.id}`, {
       headers: { authorization: token }
     })
@@ -323,9 +324,9 @@ export default class UserControllerTest extends BaseHttpTest {
   public async shouldThrowUnauthorizedExceptionWhenTryingToDeleteAnUserDifferentThenYoursAsACustomer({
     request
   }: Context) {
-    const user = await User.find({ email: 'admin@athenna.io' })
-    const token = await ioc.use('authService').login('customer@athenna.io', '12345')
-    const response = await request.delete(`/api/v1/users/${user.id}`, {
+    const user = await this.createCustomer()
+    const token = await this.createToken(user)
+    const response = await request.delete('/api/v1/users/2', {
       headers: { authorization: token }
     })
 

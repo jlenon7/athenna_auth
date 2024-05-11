@@ -1,8 +1,4 @@
 {
   "default":[],
-  "deadletter":[],
-  "user:email":[],
-  "user:password":[],
-  "user:email:password":[],
-  "user:confirm":[]
+  "deadletter":[]
 }

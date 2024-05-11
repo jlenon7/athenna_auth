@@ -66,7 +66,8 @@ export class User extends BaseModel {
     return {
       name: this.faker.person.firstName(),
       email: this.faker.internet.email(),
-      password: this.faker.internet.password()
+      token: this.faker.string.uuid(),
+      password: await bcrypt.hash('12345', 10)
     }
   }
 }
