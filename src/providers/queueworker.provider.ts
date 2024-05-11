@@ -52,9 +52,9 @@ export default class QueueWorkerProvider extends ServiceProvider {
     processor: (data: any) => any | Promise<any>
   ) {
     const interval = setInterval(async () => {
-      const queue = await Queue.queue(queueName)
+      const queue = Queue.queue(queueName)
 
-      if (await queue.isEmpty()) {
+      if (queue.isEmpty()) {
         return
       }
 
@@ -62,7 +62,7 @@ export default class QueueWorkerProvider extends ServiceProvider {
 
       await queue.process(processor)
 
-      const jobsLength = await queue.length()
+      const jobsLength = queue.length()
 
       if (jobsLength) {
         Log.info(

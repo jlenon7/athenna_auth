@@ -155,7 +155,7 @@ export default class UserControllerTest extends BaseE2ETest {
 
     await user.refresh()
 
-    const queue = await Queue.queue('user:email')
+    const queue = Queue.queue('user:email')
 
     assert.deepEqual(await queue.length(), 1)
     assert.deepEqual(user.name, 'Customer Updated')
@@ -177,7 +177,7 @@ export default class UserControllerTest extends BaseE2ETest {
 
     await user.refresh()
 
-    const queue = await Queue.queue('user:password')
+    const queue = Queue.queue('user:password')
 
     assert.deepEqual(await queue.length(), 1)
     assert.deepEqual(user.name, 'Customer Updated')
@@ -204,7 +204,7 @@ export default class UserControllerTest extends BaseE2ETest {
 
     await user.refresh()
 
-    const queue = await Queue.queue('user:email:password')
+    const queue = Queue.queue('user:email:password')
 
     assert.deepEqual(await queue.length(), 1)
     assert.deepEqual(user.name, 'Customer Updated')

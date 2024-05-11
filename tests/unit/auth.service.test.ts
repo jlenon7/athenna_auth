@@ -86,7 +86,7 @@ export default class AuthServiceTest {
     }
 
     Mail.when('send').resolve(undefined)
-    Queue.when('queue').resolve({ add: () => {} })
+    Queue.when('queue').return({ add: () => {} })
     Mock.when(this.userService, 'create').resolve(userToRegister)
 
     const authService = new AuthService(this.userService)

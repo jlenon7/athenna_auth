@@ -47,7 +47,7 @@ export class AuthService {
 
     const user = await this.userService.create(data)
 
-    await Queue.queue('user:confirm').then(q => q.add(user))
+    await Queue.queue('user:confirm').add(user)
 
     return user
   }

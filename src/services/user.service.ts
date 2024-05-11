@@ -62,23 +62,26 @@ export class UserService {
 
     switch (`${isEmailEqual}:${isPasswordEqual}`) {
       case 'false:true':
-        await Queue.queue('user:email').then(q =>
-          q.add({ user, token, email: data.email })
-        )
+        await Queue.queue('user:email').add({ user, token, email: data.email })
         break
       case 'true:false':
         data.password = await bcrypt.hash(data.password, 10)
 
-        await Queue.queue('user:password').then(q =>
-          q.add({ user, token, password: data.password })
-        )
+        await Queue.queue('user:password').add({
+          user,
+          token,
+          password: data.password
+        })
         break
       case 'false:false':
         data.password = await bcrypt.hash(data.password, 10)
 
-        await Queue.queue('user:email:password').then(q =>
-          q.add({ user, token, email: data.email, password: data.password })
-        )
+        await Queue.queue('user:email:password').add({
+          user,
+          token,
+          email: data.email,
+          password: data.password
+        })
     }
 
     data = Json.omit(data, ['email', 'password'])

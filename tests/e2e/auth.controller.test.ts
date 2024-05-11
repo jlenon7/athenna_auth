@@ -127,7 +127,7 @@ export default class AuthControllerTest extends BaseE2ETest {
       }
     })
 
-    const queue = await Queue.queue('user:confirm')
+    const queue = Queue.queue('user:confirm')
 
     assert.deepEqual(await queue.length(), 1)
     assert.isTrue(await User.exists({ email: 'test@athenna.io' }))
