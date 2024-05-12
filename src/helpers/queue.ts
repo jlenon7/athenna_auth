@@ -3,10 +3,15 @@ import { Service } from '@athenna/ioc'
 import { Database, type DatabaseImpl } from '@athenna/database'
 
 class VanillaQueue {
+  public connection: string
   private queueName = 'default'
   private queues: Record<string, any[]> = {
     default: [],
     deadletter: []
+  }
+
+  public constructor(connection: string) {
+    this.connection = connection
   }
 
   public async truncate() {
@@ -179,11 +184,11 @@ class DatabaseQueue {
 
 @Service({ alias: 'App/Helpers/Queue', type: 'singleton' })
 export class QueueImpl {
-  public driver: any = new VanillaQueue()
+  public driver: any = new VanillaQueue('vanilla')
 
   public connection(name: string) {
-    if (name === 'vanilla') {
-      this.driver = new VanillaQueue()
+    if (name === 'vanilla' || name === 'default') {
+      this.driver = new VanillaQueue('vanilla')
     }
 
     if (name === 'database') {

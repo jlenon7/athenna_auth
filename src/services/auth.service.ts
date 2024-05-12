@@ -5,9 +5,9 @@ import { Uuid } from '@athenna/common'
 import { Service } from '@athenna/ioc'
 import { Config } from '@athenna/config'
 import { User } from '#src/models/user'
-import { Queue } from '#src/providers/facades/queue'
 import { UnauthorizedException } from '@athenna/http'
 import type { UserService } from '#src/services/user.service'
+import { Queue } from '#src/providers/facades/queue'
 
 @Service()
 export class AuthService {
@@ -47,7 +47,11 @@ export class AuthService {
 
     const user = await this.userService.create(data)
 
-    await Queue.queue('user:confirm').add(user)
+    await Queue.connection('vanilla').queue('mail').add({
+      user,
+      view: 'mail/confirm',
+      subject: 'Athenna Account Confirmation'
+    })
 
     return user
   }

@@ -1,7 +1,6 @@
 import { Log } from '@athenna/logger'
 import { ServiceProvider } from '@athenna/ioc'
 import { Exec, Module } from '@athenna/common'
-import { Queue } from '#src/providers/facades/queue'
 
 export default class QueueWorkerProvider extends ServiceProvider {
   public intervals = []
@@ -17,7 +16,7 @@ export default class QueueWorkerProvider extends ServiceProvider {
       const job = this.container.transient(Job, alias).use(alias)
 
       const interval = setInterval(async () => {
-        const queue = Queue.queue(queueName)
+        const queue = job.queue()
 
         if (queue.isEmpty()) {
           return

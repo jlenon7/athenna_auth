@@ -5,8 +5,8 @@ import { Role } from '#src/models/role'
 import { RoleUser } from '#src/models/roleuser'
 import { RoleEnum } from '#src/enums/role.enum'
 import { NotFoundException } from '@athenna/http'
-import { Queue } from '#src/providers/facades/queue'
 import { Json, type PaginationOptions } from '@athenna/common'
+import { Queue } from '#src/providers/facades/queue'
 
 @Service()
 export class UserService {
@@ -62,25 +62,38 @@ export class UserService {
 
     switch (`${isEmailEqual}:${isPasswordEqual}`) {
       case 'false:true':
-        await Queue.queue('user:email').add({ user, token, email: data.email })
-        break
-      case 'true:false':
-        data.password = await bcrypt.hash(data.password, 10)
-
-        await Queue.queue('user:password').add({
-          user,
-          token,
-          password: data.password
-        })
-        break
-      case 'false:false':
-        data.password = await bcrypt.hash(data.password, 10)
-
-        await Queue.queue('user:email:password').add({
+        await Queue.connection('vanilla').queue('mail').add({
           user,
           token,
           email: data.email,
-          password: data.password
+          view: 'mail/change-email',
+          subject: 'Athenna Email Change'
+        })
+
+        break
+      case 'true:false':
+        // TODO create a password_resets table to save the password
+        data.password = await bcrypt.hash(data.password, 10)
+
+        await Queue.connection('vanilla').queue('mail').add({
+          user,
+          token,
+          password: data.password,
+          view: 'mail/change-password',
+          subject: 'Athenna Email Change'
+        })
+        break
+      case 'false:false':
+        // TODO create a password_resets table to save the password
+        data.password = await bcrypt.hash(data.password, 10)
+
+        await Queue.connection('vanilla').queue('mail').add({
+          user,
+          token,
+          email: data.email,
+          password: data.password,
+          view: 'mail/change-email-password',
+          subject: 'Athenna Email & Password Change'
         })
     }
 
