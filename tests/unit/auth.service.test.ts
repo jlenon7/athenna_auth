@@ -1,7 +1,7 @@
 import bcrypt from 'bcrypt'
 import { Mail } from '@athenna/mail'
 import { Uuid } from '@athenna/common'
-import { Queue } from '#src/providers/facades/queue'
+import { Queue } from '@athenna/queue'
 import { UserService } from '#src/services/user.service'
 import { AuthService } from '#src/services/auth.service'
 import { NotFoundException, UnauthorizedException } from '@athenna/http'

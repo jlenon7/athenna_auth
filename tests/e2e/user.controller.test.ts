@@ -1,12 +1,12 @@
 import bcrypt from 'bcrypt'
+import { Queue } from '@athenna/queue'
 import { User } from '#src/models/user'
 import { Role } from '#src/models/role'
 import { SmtpServer } from '@athenna/mail'
 import { Database } from '@athenna/database'
 import { RoleUser } from '#src/models/roleuser'
-import { Queue } from '#src/providers/facades/queue'
 import { BaseE2ETest } from '#tests/helpers/base.e2e.test'
-import { Test, type Context, AfterAll, BeforeAll } from '@athenna/test'
+import { Test, type Context, AfterAll, BeforeAll, Cleanup } from '@athenna/test'
 
 export default class UserControllerTest extends BaseE2ETest {
   @BeforeAll()
@@ -145,6 +145,7 @@ export default class UserControllerTest extends BaseE2ETest {
   }
 
   @Test()
+  @Cleanup(async () => Queue.truncate())
   public async shouldNotBeAbleToUpdateAUserEmailWithoutEmailConfirmation({ assert, request }: Context) {
     const user = await User.find({ email: 'customer@athenna.io' })
     const token = await this.getAdminToken()
@@ -167,6 +168,7 @@ export default class UserControllerTest extends BaseE2ETest {
   }
 
   @Test()
+  @Cleanup(async () => Queue.truncate())
   public async shouldNotBeAbleToUpdateAUserPasswordWithoutEmailConfirmation({ assert, request }: Context) {
     const user = await User.find({ email: 'customer@athenna.io' })
     const token = await this.getAdminToken()
@@ -189,6 +191,7 @@ export default class UserControllerTest extends BaseE2ETest {
   }
 
   @Test()
+  @Cleanup(async () => Queue.truncate())
   public async shouldNotBeAbleToUpdateAUserEmailAndPasswordWithoutEmailConfirmation({ assert, request }: Context) {
     const user = await User.find({ email: 'customer@athenna.io' })
     const token = await this.getAdminToken()

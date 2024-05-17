@@ -2,11 +2,11 @@ import bcrypt from 'bcrypt'
 import { Service } from '@athenna/ioc'
 import { User } from '#src/models/user'
 import { Role } from '#src/models/role'
+import { Queue } from '@athenna/queue'
 import { RoleUser } from '#src/models/roleuser'
 import { RoleEnum } from '#src/enums/role.enum'
 import { NotFoundException } from '@athenna/http'
 import { Json, type PaginationOptions } from '@athenna/common'
-import { Queue } from '#src/providers/facades/queue'
 
 @Service()
 export class UserService {
@@ -62,7 +62,7 @@ export class UserService {
 
     switch (`${isEmailEqual}:${isPasswordEqual}`) {
       case 'false:true':
-        await Queue.connection('vanilla').queue('mail').add({
+        await Queue.queue('mail').add({
           user,
           token,
           email: data.email,
@@ -75,7 +75,7 @@ export class UserService {
         // TODO create a password_resets table to save the password
         data.password = await bcrypt.hash(data.password, 10)
 
-        await Queue.connection('vanilla').queue('mail').add({
+        await Queue.queue('mail').add({
           user,
           token,
           password: data.password,
@@ -87,7 +87,7 @@ export class UserService {
         // TODO create a password_resets table to save the password
         data.password = await bcrypt.hash(data.password, 10)
 
-        await Queue.connection('vanilla').queue('mail').add({
+        await Queue.queue('mail').add({
           user,
           token,
           email: data.email,

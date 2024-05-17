@@ -25,7 +25,7 @@
   },
   "dependencies": {
     "@athenna/artisan": "^4.42.0",
-    "@athenna/common": "^4.39.0",
+    "@athenna/common": "^4.40.0",
     "@athenna/config": "^4.21.0",
     "@athenna/core": "^4.38.0",
     "@athenna/database": "^4.52.0",
@@ -33,6 +33,7 @@
     "@athenna/ioc": "^4.20.0",
     "@athenna/logger": "^4.21.0",
     "@athenna/mail": "^4.18.0",
+    "@athenna/queue": "^4.3.0",
     "@athenna/validator": "^4.2.0",
     "@athenna/view": "^4.22.0",
     "@fastify/cors": "^8.5.0",
@@ -137,7 +138,6 @@
   },
   "athenna": {
     "services": [
-      "#src/helpers/queue",
       "#src/services/user.service",
       "#src/services/auth.service"
     ],
@@ -150,7 +150,8 @@
       "@athenna/mail/providers/MailProvider",
       "@athenna/mail/providers/SmtpServerProvider",
       "@athenna/validator/providers/ValidatorProvider",
-      "#src/providers/queueworker.provider"
+      "@athenna/queue/providers/QueueProvider",
+      "@athenna/queue/providers/WorkerProvider"
     ],
     "controllers": [
       "#src/controllers/user.controller",
@@ -227,7 +228,8 @@
         "loadApp": true
       },
       "make:view": "@athenna/view/commands/MakeViewCommand",
-      "make:validator": "@athenna/validator/commands/MakeValidatorCommand"
+      "make:validator": "@athenna/validator/commands/MakeValidatorCommand",
+      "make:worker": "@athenna/queue/commands/MakeWorkerCommand"
     },
     "templates": {
       "exception": "node_modules/@athenna/core/templates/exception.edge",
@@ -248,7 +250,8 @@
       "migration": "node_modules/@athenna/database/templates/migration.edge",
       "view": "node_modules/@athenna/view/templates/view.edge",
       "validator-http": "node_modules/@athenna/validator/templates/validator-http.edge",
-      "validator-console": "node_modules/@athenna/validator/templates/validator-console.edge"
+      "validator-console": "node_modules/@athenna/validator/templates/validator-console.edge",
+      "worker": "node_modules/@athenna/queue/templates/worker.edge"
     },
     "directories": {
       "bootstrap": "bin",
@@ -259,6 +262,8 @@
       "providers": "src/providers",
       "facades": "src/providers/facades",
       "services": "src/services",
+      "jobs": "src/jobs",
+      "workers": "src/workers",
       "validators": "src/validators",
       "commands": "src/commands",
       "controllers": "src/controllers",
@@ -288,8 +293,8 @@
       "#src/validators/register.validator",
       "#src/validators/update.validator"
     ],
-    "jobs": [
-      "#src/jobs/mail.job"
+    "workers": [
+      "#src/workers/mail.worker"
     ]
   }
 }

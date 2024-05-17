@@ -2,12 +2,12 @@ import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
 import { Log } from '@athenna/logger'
 import { Uuid } from '@athenna/common'
+import { Queue } from '@athenna/queue'
 import { Service } from '@athenna/ioc'
-import { Config } from '@athenna/config'
 import { User } from '#src/models/user'
+import { Config } from '@athenna/config'
 import { UnauthorizedException } from '@athenna/http'
 import type { UserService } from '#src/services/user.service'
-import { Queue } from '#src/providers/facades/queue'
 
 @Service()
 export class AuthService {
@@ -47,7 +47,7 @@ export class AuthService {
 
     const user = await this.userService.create(data)
 
-    await Queue.connection('vanilla').queue('mail').add({
+    await Queue.queue('mail').add({
       user,
       view: 'mail/confirm',
       subject: 'Athenna Account Confirmation'
