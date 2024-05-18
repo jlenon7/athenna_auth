@@ -3,6 +3,7 @@ import { Service } from '@athenna/ioc'
 import { User } from '#src/models/user'
 import { Role } from '#src/models/role'
 import { Queue } from '@athenna/queue'
+import type { Token } from '#src/models/token'
 import { RoleUser } from '#src/models/roleuser'
 import { RoleEnum } from '#src/enums/role.enum'
 import { NotFoundException } from '@athenna/http'
@@ -43,11 +44,13 @@ export class UserService {
     return user
   }
 
-  public async getByToken(token: string) {
-    const user = await User.query().where('token', token).find()
+  public async getByToken(token: Token) {
+    const user = await User.query().where('id', token.userId).find()
 
     if (!user) {
-      throw new NotFoundException(`Not found any user with token ${token}.`)
+      throw new NotFoundException(
+        `Not found any user with token ${token.token}.`
+      )
     }
 
     return user
@@ -56,7 +59,6 @@ export class UserService {
   public async update(id: number, data: Partial<User>): Promise<User> {
     const user = await this.getById(id)
 
-    const token = user.token
     const isEmailEqual = user.isEmailEqual(data.email)
     const isPasswordEqual = user.isPasswordEqual(data.password)
 
@@ -64,36 +66,32 @@ export class UserService {
       case 'false:true':
         await Queue.queue('mail').add({
           user,
-          token,
-          email: data.email,
-          view: 'mail/change-email',
+          token: await user.resetEmailToken(data.email),
+          view: 'mail/reset_email',
           subject: 'Athenna Email Change'
         })
 
         break
       case 'true:false':
-        // TODO create a password_resets table to save the password
-        data.password = await bcrypt.hash(data.password, 10)
-
         await Queue.queue('mail').add({
           user,
-          token,
-          password: data.password,
-          view: 'mail/change-password',
-          subject: 'Athenna Email Change'
+          view: 'mail/reset_password',
+          subject: 'Athenna Email Change',
+          token: await user.resetPasswordToken(
+            await bcrypt.hash(data.password, 10)
+          )
         })
+
         break
       case 'false:false':
-        // TODO create a password_resets table to save the password
-        data.password = await bcrypt.hash(data.password, 10)
-
         await Queue.queue('mail').add({
           user,
-          token,
-          email: data.email,
-          password: data.password,
-          view: 'mail/change-email-password',
-          subject: 'Athenna Email & Password Change'
+          view: 'mail/reset_email_password',
+          subject: 'Athenna Email & Password Change',
+          token: await user.resetEmailPasswordToken(
+            data.email,
+            await bcrypt.hash(data.password, 10)
+          )
         })
     }
 

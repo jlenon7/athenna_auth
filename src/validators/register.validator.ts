@@ -5,6 +5,7 @@ import { Validator, BaseValidator } from '@athenna/validator'
 export class RegisterValidator extends BaseValidator {
   public schema = this.validator.object({
     name: this.validator.string(),
+    cellphone: this.validator.string().optional(),
     email: this.validator.string().email().unique({ table: 'users' }),
     password: this.validator.string().minLength(8).maxLength(32).confirmed()
   })
@@ -13,6 +14,7 @@ export class RegisterValidator extends BaseValidator {
     const data = request.only([
       'name',
       'email',
+      'cellphone',
       'password',
       'password_confirmation'
     ])

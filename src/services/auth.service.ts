@@ -1,11 +1,11 @@
 import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
 import { Log } from '@athenna/logger'
-import { Uuid } from '@athenna/common'
 import { Queue } from '@athenna/queue'
 import { Service } from '@athenna/ioc'
 import { User } from '#src/models/user'
 import { Config } from '@athenna/config'
+import { Token } from '#src/models/token'
 import { UnauthorizedException } from '@athenna/http'
 import type { UserService } from '#src/services/user.service'
 
@@ -42,13 +42,14 @@ export class AuthService {
   }
 
   public async register(data: Partial<User>) {
-    data.token = Uuid.generate()
     data.password = await bcrypt.hash(data.password, 10)
 
     const user = await this.userService.create(data)
+    const token = await user.confirmToken()
 
     await Queue.queue('mail').add({
       user,
+      token,
       view: 'mail/confirm',
       subject: 'Athenna Account Confirmation'
     })
@@ -56,7 +57,8 @@ export class AuthService {
     return user
   }
 
-  public async confirm(token: string) {
+  public async confirm(tkn: string) {
+    const token = await Token.findOrThrowNotFound(tkn)
     const user = await this.userService.getByToken(token)
 
     user.emailVerifiedAt = new Date()
@@ -64,32 +66,29 @@ export class AuthService {
     await user.save()
   }
 
-  public async confirmEmailChange(email: string, token: string) {
+  public async resetEmail(tkn: string) {
+    const token = await Token.findOrThrowNotFound(tkn)
     const user = await this.userService.getByToken(token)
 
-    user.email = email
+    user.email = token.value
 
     await user.save()
   }
 
-  public async confirmPasswordChange(password: string, token: string) {
+  public async resetPassword(tkn: string) {
+    const token = await Token.findOrThrowNotFound(tkn)
     const user = await this.userService.getByToken(token)
 
-    /**
-     * Password is already hashed before sending
-     * the data to queue.
-     */
-    user.password = password
+    user.password = token.value
 
     await user.save()
   }
 
-  public async confirmEmailPasswordChange(
-    email: string,
-    password: string,
-    token: string
-  ) {
+  public async resetEmailPassword(tkn: string) {
+    const token = await Token.findOrThrowNotFound(tkn)
     const user = await this.userService.getByToken(token)
+
+    const [email, password] = JSON.parse(token.value)
 
     user.email = email
     user.password = password

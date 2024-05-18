@@ -48,7 +48,9 @@ export default {
   |
   */
 
-  components: {},
+  components: {
+    mail: Path.views('components/mail.edge')
+  },
 
   /*
   |--------------------------------------------------------------------------

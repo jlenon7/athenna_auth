@@ -2,9 +2,11 @@ import bcrypt from 'bcrypt'
 import { Queue } from '@athenna/queue'
 import { User } from '#src/models/user'
 import { Role } from '#src/models/role'
+import { Token } from '#src/models/token'
 import { SmtpServer } from '@athenna/mail'
 import { Database } from '@athenna/database'
 import { RoleUser } from '#src/models/roleuser'
+import { TokenEnum } from '#src/enums/token.enum'
 import { BaseE2ETest } from '#tests/helpers/base.e2e.test'
 import { Test, type Context, AfterAll, BeforeAll, Cleanup } from '@athenna/test'
 
@@ -130,8 +132,6 @@ export default class AuthControllerTest extends BaseE2ETest {
 
     const queue = Queue.queue('mail')
 
-    assert.deepEqual(await queue.length(), 1)
-    assert.isTrue(await User.exists({ email: 'test@athenna.io' }))
     response.assertStatusCode(201)
     response.assertBodyContains({
       data: {
@@ -139,6 +139,9 @@ export default class AuthControllerTest extends BaseE2ETest {
         email: 'test@athenna.io'
       }
     })
+
+    assert.deepEqual(await queue.length(), 1)
+    assert.isTrue(await User.exists({ email: 'test@athenna.io' }))
   }
 
   @Test()
@@ -173,7 +176,7 @@ export default class AuthControllerTest extends BaseE2ETest {
   }
 
   @Test()
-  public async shouldThrowValidationErrorWhenPasswordLenghtIsLessThenEightWhenRegisteringUser({ request }: Context) {
+  public async shouldThrowValidationErrorWhenPasswordLengthIsLessThenEightWhenRegisteringUser({ request }: Context) {
     const response = await request.post('/api/v1/register', {
       body: {
         name: 'Test',
@@ -262,11 +265,10 @@ export default class AuthControllerTest extends BaseE2ETest {
   @Test()
   public async shouldBeAbleToConfirmUserAccount({ assert, request }: Context) {
     const user = await User.factory().create({ emailVerifiedAt: null })
+    const token = await Token.factory().create({ userId: user.id, type: TokenEnum.CONFIRM_ACCOUNT })
 
     const response = await request.get('/api/v1/confirm/account', {
-      query: {
-        token: user.token
-      }
+      query: { token: token.token }
     })
 
     await user.refresh()
@@ -278,9 +280,7 @@ export default class AuthControllerTest extends BaseE2ETest {
   @Test()
   public async shouldThrowNotFoundExceptionIfTokenDoesNotExistWhenConfirmingAccount({ request }: Context) {
     const response = await request.get('/api/v1/confirm/account', {
-      query: {
-        token: 'not-found'
-      }
+      query: { token: 'not-found' }
     })
 
     response.assertStatusCode(404)
@@ -294,28 +294,25 @@ export default class AuthControllerTest extends BaseE2ETest {
   }
 
   @Test()
-  public async shouldBeAbleToConfirmUserEmail({ assert, request }: Context) {
+  public async shouldBeAbleToConfirmUserEmailReset({ assert, request }: Context) {
+    const email = 'newemail@athenna.io'
     const user = await User.factory().create()
+    const token = await Token.factory().create({ value: email, userId: user.id, type: TokenEnum.EMAIL })
 
-    const response = await request.get('/api/v1/confirm/email', {
-      query: {
-        token: user.token,
-        email: 'newemail@athenna.io'
-      }
+    const response = await request.get('/api/v1/reset/email', {
+      query: { token: token.token }
     })
 
     await user.refresh()
 
-    assert.deepEqual(user.email, 'newemail@athenna.io')
+    assert.deepEqual(user.email, email)
     response.assertStatusCode(204)
   }
 
   @Test()
   public async shouldThrowNotFoundExceptionIfTokenDoesNotExistWhenConfirmingEmail({ request }: Context) {
-    const response = await request.get('/api/v1/confirm/email', {
-      query: {
-        token: 'not-found'
-      }
+    const response = await request.get('/api/v1/reset/email', {
+      query: { token: 'not-found' }
     })
 
     response.assertStatusCode(404)
@@ -329,14 +326,13 @@ export default class AuthControllerTest extends BaseE2ETest {
   }
 
   @Test()
-  public async shouldBeAbleToConfirmUserPassword({ assert, request }: Context) {
+  public async shouldBeAbleToConfirmUserPasswordReset({ assert, request }: Context) {
+    const password = await bcrypt.hash('1234567', 10)
     const user = await User.factory().create()
+    const token = await Token.factory().create({ value: password, userId: user.id, type: TokenEnum.PASSWORD })
 
-    const response = await request.get('/api/v1/confirm/password', {
-      query: {
-        token: user.token,
-        password: await bcrypt.hash('1234567', 10)
-      }
+    const response = await request.get('/api/v1/reset/password', {
+      query: { token: token.token }
     })
 
     await user.refresh()
@@ -347,10 +343,8 @@ export default class AuthControllerTest extends BaseE2ETest {
 
   @Test()
   public async shouldThrowNotFoundExceptionIfTokenDoesNotExistWhenConfirmingPassword({ request }: Context) {
-    const response = await request.get('/api/v1/confirm/password', {
-      query: {
-        token: 'not-found'
-      }
+    const response = await request.get('/api/v1/reset/password', {
+      query: { token: 'not-found' }
     })
 
     response.assertStatusCode(404)
@@ -364,15 +358,19 @@ export default class AuthControllerTest extends BaseE2ETest {
   }
 
   @Test()
-  public async shouldBeAbleToConfirmUserEmailPassword({ assert, request }: Context) {
+  public async shouldBeAbleToConfirmUserEmailPasswordReset({ assert, request }: Context) {
+    const email = 'newemaill@athenna.io'
+    const password = await bcrypt.hash('1234567', 10)
+    const emailPassword = JSON.stringify([email, password])
     const user = await User.factory().create()
+    const token = await Token.factory().create({
+      value: emailPassword,
+      userId: user.id,
+      type: TokenEnum.EMAIL_PASSWORD
+    })
 
-    const response = await request.get('/api/v1/confirm/email/password', {
-      query: {
-        token: user.token,
-        email: 'newemaill@athenna.io',
-        password: await bcrypt.hash('1234567', 10)
-      }
+    const response = await request.get('/api/v1/reset/email/password', {
+      query: { token: token.token }
     })
 
     await user.refresh()
@@ -384,10 +382,8 @@ export default class AuthControllerTest extends BaseE2ETest {
 
   @Test()
   public async shouldThrowNotFoundExceptionIfTokenDoesNotExistWhenConfirmingEmailPassword({ request }: Context) {
-    const response = await request.get('/api/v1/confirm/email/password', {
-      query: {
-        token: 'not-found'
-      }
+    const response = await request.get('/api/v1/reset/email/password', {
+      query: { token: 'not-found' }
     })
 
     response.assertStatusCode(404)

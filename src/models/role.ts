@@ -12,10 +12,6 @@ export class Role extends BaseModel {
   @BelongsToMany(() => User, () => RoleUser)
   public users: User[]
 
-  public static attributes(): Partial<Role> {
-    return {}
-  }
-
   public static async definition(): Promise<Partial<Role>> {
     return {
       name: this.faker.person.jobType()

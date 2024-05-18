@@ -6,6 +6,7 @@ import { UserService } from '#src/services/user.service'
 import { AuthService } from '#src/services/auth.service'
 import { NotFoundException, UnauthorizedException } from '@athenna/http'
 import { Test, type Context, Mock, AfterEach, BeforeEach } from '@athenna/test'
+import { User } from '#src/models/user'
 
 export default class AuthServiceTest {
   private userService: UserService
@@ -87,7 +88,7 @@ export default class AuthServiceTest {
 
     Mail.when('send').resolve(undefined)
     Queue.when('queue').return({ add: () => {} })
-    Mock.when(this.userService, 'create').resolve(userToRegister)
+    Mock.when(this.userService, 'create').resolve(User.factory().make(userToRegister))
 
     const authService = new AuthService(this.userService)
     const user = await authService.register(userToRegister)

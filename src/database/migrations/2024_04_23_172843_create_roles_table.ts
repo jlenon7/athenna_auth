@@ -1,3 +1,4 @@
+import { RoleEnum } from '#src/enums/role.enum'
 import { BaseMigration, type DatabaseImpl } from '@athenna/database'
 
 export class Roles extends BaseMigration {
@@ -6,7 +7,7 @@ export class Roles extends BaseMigration {
   public async up(db: DatabaseImpl) {
     return db.createTable(this.tableName, builder => {
       builder.increments('id')
-      builder.string('name').unique().notNullable()
+      builder.enum('name', RoleEnum.values()).notNullable()
     })
   }
 

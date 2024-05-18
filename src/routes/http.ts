@@ -1,6 +1,6 @@
 import { Route } from '@athenna/http'
 
-Route.view('/mailable', 'mail/register', { user: { name: 'João' } }).helmet({
+Route.view('/mailable', 'mail/confirm', { user: { name: 'João' } }).helmet({
   contentSecurityPolicy: false
 })
 
@@ -17,12 +17,10 @@ Route.group(() => {
   }).middleware('auth')
 
   Route.get('confirm/account', 'AuthController.confirm')
-  Route.get('confirm/email', 'AuthController.confirmEmailChange')
-  Route.get('confirm/password', 'AuthController.confirmPasswordChange')
-  Route.get(
-    'confirm/email/password',
-    'AuthController.confirmEmailPasswordChange'
-  )
+
+  Route.get('reset/email', 'AuthController.resetEmail')
+  Route.get('reset/password', 'AuthController.resetPassword')
+  Route.get('reset/email/password', 'AuthController.resetEmailPassword')
 
   Route.post('login', 'AuthController.login').validator('user:login')
   Route.post('register', 'AuthController.register').validator('user:register')

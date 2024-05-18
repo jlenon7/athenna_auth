@@ -1,5 +1,5 @@
-import { Uuid } from '@athenna/common'
 import { User } from '#src/models/user'
+import { Token } from '#src/models/token'
 import { RoleEnum } from '#src/enums/role.enum'
 import { NotFoundException } from '@athenna/http'
 import { UserService } from '#src/services/user.service'
@@ -90,24 +90,24 @@ export default class UserServiceTest {
   }
 
   @Test()
-  public async shouldBeAbleToGetAnUserBytoken({ assert }: Context) {
-    const fakeUser = await User.factory().count(1).make()
+  public async shouldBeAbleToGetAnUserByToken({ assert }: Context) {
+    const fakeUser = await User.factory().make()
+    const token = await Token.factory().make({ userId: fakeUser.id })
 
-    Mock.when(Database.driver, 'where').returnThis()
     Mock.when(Database.driver, 'find').resolve(fakeUser)
 
-    const token = Uuid.generate()
     const user = await new UserService().getByToken(token)
 
     assert.deepEqual(user.toJSON(), fakeUser.toJSON())
-    assert.calledWith(Database.driver.where, 'token', token)
   }
 
   @Test()
-  public async shouldThrowNotFoundExceptionIftokenDoesNotExist({ assert }: Context) {
+  public async shouldThrowNotFoundExceptionIfTokenDoesNotExist({ assert }: Context) {
     Mock.when(Database.driver, 'find').resolve(undefined)
 
-    await assert.rejects(() => new UserService().getByToken(Uuid.generate()), NotFoundException)
+    const token = await Token.factory().make()
+
+    await assert.rejects(() => new UserService().getByToken(token), NotFoundException)
   }
 
   @Test()

@@ -120,7 +120,7 @@ export default {
   */
 
   helmet: {
-    enabled: true,
+    enabled: false,
     global: true
   },
 

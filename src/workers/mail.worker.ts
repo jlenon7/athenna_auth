@@ -6,8 +6,6 @@ type Job = {
   view: string
   subject: string
   user: User
-  email: string
-  password: string
   token: string
 }
 
@@ -21,12 +19,7 @@ export class MailWorker extends BaseWorker {
     await Mail.from('noreply@athenna.io')
       .to(data.user.email)
       .subject(data.subject)
-      .view(data.view, {
-        user: data.user,
-        email: data.email,
-        password: data.password,
-        token: data.token
-      })
+      .view(data.view, { user: data.user, token: data.token })
       .send()
   }
 }

@@ -22,7 +22,7 @@ export class AuthController {
 
   public async register({ request, response }: Context) {
     const user = await this.authService.register(
-      request.only(['name', 'email', 'password'])
+      request.only(['name', 'email', 'cellphone', 'password'])
     )
 
     return response.status(201).send(user)
@@ -34,30 +34,20 @@ export class AuthController {
     return response.status(204)
   }
 
-  public async confirmEmailChange({ request, response }: Context) {
-    await this.authService.confirmEmailChange(
-      request.query('email'),
-      request.query('token')
-    )
+  public async resetEmail({ request, response }: Context) {
+    await this.authService.resetEmail(request.query('token'))
 
     return response.status(204)
   }
 
-  public async confirmPasswordChange({ request, response }: Context) {
-    await this.authService.confirmPasswordChange(
-      request.query('password'),
-      request.query('token')
-    )
+  public async resetPassword({ request, response }: Context) {
+    await this.authService.resetPassword(request.query('token'))
 
     return response.status(204)
   }
 
-  public async confirmEmailPasswordChange({ request, response }: Context) {
-    await this.authService.confirmEmailPasswordChange(
-      request.query('email'),
-      request.query('password'),
-      request.query('token')
-    )
+  public async resetEmailPassword({ request, response }: Context) {
+    await this.authService.resetEmailPassword(request.query('token'))
 
     return response.status(204)
   }

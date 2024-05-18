@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Athenna Framework</title>
+  <link rel="stylesheet" href="{{ `${Config.get('http.url')}/public/css/mail.css` }}" />
+</head>
+<body>
+  <div class="header">
+    <img src="{{ `${Config.get('http.url')}/public/img/logos/minerva.png` }}" alt="Minerva Logo" class="minerva-img">
+    <h1>Welcome to Athenna {{ user.name }}!</h1>
+  </div>
+  {{{ await $slots.main() }}}
+</body>
+</html>
